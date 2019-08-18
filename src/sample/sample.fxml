@@ -179,7 +179,7 @@
       </VBox>
    </center>
    <top>
-      <Label text="Magit - Amir &amp; Ofir" BorderPane.alignment="CENTER">
+      <Label text="Magit" BorderPane.alignment="CENTER">
          <font>
             <Font name="Candara Bold" size="38.0" />
          </font>
