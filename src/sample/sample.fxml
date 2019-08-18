@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.text.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <VBox prefHeight="202.0" prefWidth="382.0" BorderPane.alignment="CENTER">
+         <children>
+            <HBox prefHeight="26.0" prefWidth="582.0">
+               <children>
+                  <Label text="Repository Location: ">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </Label>
+                  <TextField alignment="CENTER" disable="true" prefWidth="433.0">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets left="10.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </HBox>
+            <TabPane prefHeight="102.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE">
+               <tabs>
+                  <Tab text="Repository">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="32.0" prefWidth="600.0">
+                           <children>
+                              <GridPane alignment="CENTER" layoutX="2.0" layoutY="19.0" prefHeight="30.0" prefWidth="588.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" text="Load Repository" GridPane.columnIndex="2" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                    </Button>
+                                    <Button mnemonicParsing="false" text="Create Repository" GridPane.columnIndex="3" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                    <Button mnemonicParsing="false" text="Laod Repository XML" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                    <Button alignment="BOTTOM_LEFT" mnemonicParsing="false" text="Switch Repository" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                       <GridPane.margin>
+                                          <Insets left="10.0" />
+                                       </GridPane.margin>
+                                    </Button>
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                  <Tab disable="true" text="Files &amp; Commits">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <GridPane layoutX="2.0" layoutY="18.0" prefHeight="30.0" prefWidth="588.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" text="Commit" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                    <Button alignment="BOTTOM_LEFT" mnemonicParsing="false" text="Show Open Changes" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                    </Button>
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+                  <Tab disable="true" text="Branches">
+                     <content>
+                        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                           <children>
+                              <GridPane layoutX="2.0" layoutY="18.0" prefHeight="30.0" prefWidth="588.0">
+                                 <children>
+                                    <Button mnemonicParsing="false" text="Create New Branch" GridPane.columnIndex="1" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                    <Button alignment="BOTTOM_LEFT" mnemonicParsing="false" text="Show All Branches" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                       <GridPane.margin>
+                                          <Insets />
+                                       </GridPane.margin>
+                                    </Button>
+                                    <Button mnemonicParsing="false" text="Delete Exist Branch" GridPane.columnIndex="2" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                    <Button mnemonicParsing="false" text="Replace Head Branch" GridPane.columnIndex="3" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                    <Button mnemonicParsing="false" text="Reset Branch" GridPane.columnIndex="4" GridPane.halignment="CENTER">
+                                       <font>
+                                          <Font size="12.0" />
+                                       </font>
+                                    </Button>
+                                 </children>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                 </rowConstraints>
+                              </GridPane>
+                           </children>
+                        </AnchorPane>
+                     </content>
+                  </Tab>
+               </tabs>
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </TabPane>
+         </children>
+      </VBox>
+   </center>
+   <top>
+      <Label text="Magit - Amir &amp; Ofir" BorderPane.alignment="CENTER">
+         <font>
+            <Font name="Candara Bold" size="38.0" />
+         </font>
+         <BorderPane.margin>
+            <Insets top="10.0" />
+         </BorderPane.margin>
+      </Label>
+   </top>
+</BorderPane>
