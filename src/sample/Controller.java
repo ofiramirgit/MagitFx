@@ -61,13 +61,21 @@ public class Controller {
     public void readXML(javafx.event.ActionEvent actionEvent) { //need to add check
         final FileChooser dc = new FileChooser();
         File selectedXML = dc.showOpenDialog(null);
-        try {
-            if (selectedXML != null){
-                m_LogicManager.readXML(selectedXML.getAbsolutePath());
-                txtField_repositoryPath.setText(selectedXML.getAbsolutePath());
+
+       Runnable task = ()-> {
+            try {
+                if (selectedXML != null) {
+                    m_LogicManager.readXML(selectedXML.getAbsolutePath());
+                    txtField_repositoryPath.setText(selectedXML.getAbsolutePath());
+                }
+            } catch (XmlException e) {
+                e.printStackTrace();
             }
-        } catch (XmlException e) {
-            e.printStackTrace();
+        };
+
+       Thread thread = new Thread(task);
+       thread.start();
+
         }
 
     }
@@ -82,4 +90,4 @@ public class Controller {
 //        }
 //    }
 
-}
+

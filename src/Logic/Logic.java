@@ -25,7 +25,7 @@ public class Logic {
     private String m_ActiveUser;
     private String m_ActiveRepository;
     private String m_ActiveRepositoryName;
-    private ZipFile m_ZipFile;
+    private ZipFile m_ZipFile  = new ZipFile();
     private Map<String, String> m_CurrentCommitStateMap;
     private InputValidation m_InputValidation = new InputValidation();
 
