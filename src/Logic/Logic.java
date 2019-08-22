@@ -41,26 +41,24 @@ public class Logic {
 
     //-------initRepository-------start------------------------------------------------------------------
 
-    public boolean initRepository(File selectedFolder) {
-        if(m_FilesValidation.isRepository(selectedFolder))
+    public boolean initRepository(String selectedFolder,String RepositoryName) {
+        if(m_FilesValidation.isRepository(selectedFolder + File.separator + RepositoryName))
             return false;
         else
-            createRepository(selectedFolder);
+            createRepository(selectedFolder, RepositoryName);
         return true;
     }
 
-    private void createRepository(File selectedFolder) {
-        String RepoName = selectedFolder.getName();
-        String RepoPathString = selectedFolder.toString();
-        Path RepositoryPath = Paths.get(RepoPathString + File.separator + RepoName);
-        Path RootFolderPath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + RepoName);
-        Path ObjectPath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + ".magit" + File.separator + "objects");
-        Path branchesPath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + ".magit" + File.separator + "branches");
-        Path activeBranchePath = Paths.get(RepoPathString+ File.separator + RepoName + File.separator + ".magit" + File.separator + "branches" + File.separator + "HEAD.txt");
-        Path branchesNamesPath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + ".magit" + File.separator + "branches" + File.separator + "NAMES.txt");
-        Path rootFolderNamePath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + ".magit" + File.separator + "RootFolderName.txt");
-        Path commitStatusPath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + ".magit" + File.separator + "CommitStatus.txt");
-        Path materFilePath = Paths.get(RepoPathString + File.separator + RepoName + File.separator + ".magit" + File.separator + "branches" +File.separator +"mater.txt");
+    private void createRepository(String selectedFolder,String RepositoryName) {
+        Path RepositoryPath = Paths.get(selectedFolder + File.separator + RepositoryName);
+        Path RootFolderPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + RepositoryName);
+        Path ObjectPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "objects");
+        Path branchesPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "branches");
+        Path activeBranchePath = Paths.get(selectedFolder+ File.separator + RepositoryName + File.separator + ".magit" + File.separator + "branches" + File.separator + "HEAD.txt");
+        Path branchesNamesPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "branches" + File.separator + "NAMES.txt");
+        Path rootFolderNamePath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "RootFolderName.txt");
+        Path commitStatusPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "CommitStatus.txt");
+        Path materFilePath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "branches" +File.separator +"mater.txt");
         Boolean dirExists = Files.exists(ObjectPath);
         if (dirExists) {
             System.out.println("Directory Alerady Exists");
@@ -78,7 +76,7 @@ public class Logic {
                 Files.write(activeBranchePath, "master".getBytes());
                 Files.write(branchesNamesPath, "master".getBytes());
                 Files.write(materFilePath, "".getBytes());
-                Files.write(rootFolderNamePath, RepoName.getBytes());
+                Files.write(rootFolderNamePath, RepositoryName.getBytes());
             } catch (IOException ioExceptionObj) {
             }
         }
