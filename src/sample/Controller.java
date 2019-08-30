@@ -46,24 +46,24 @@ public class Controller {
     @FXML
     public Button btn_setUserName;
 
-    public void initRepository(javafx.event.ActionEvent actionEvent) throws IOException {
-//        final DirectoryChooser dc = new DirectoryChooser();
-//        File selectedFolder = dc.showDialog(null);
-//        if (selectedFolder != null) {
-            FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(getClass().getResource("window.fxml"));
-            Parent rootViewParent = loader.load();
-            Scene rootViewScene = new Scene(rootViewParent);
-            RepositoryName controller = (RepositoryName)loader.getController();
-            controller.initData("ofir");
-            Stage window = (Stage)((javafx.scene.Node)actionEvent.getSource()).getScene().getWindow();
-            window.setScene(rootViewScene);
-            window.show();
-
-        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
-        primaryStage.setTitle("Magit");
-        primaryStage.setScene(new Scene(root, 600, 400));
-        primaryStage.show();t
+//    public void initRepository(javafx.event.ActionEvent actionEvent) throws IOException {
+////        final DirectoryChooser dc = new DirectoryChooser();
+////        File selectedFolder = dc.showDialog(null);
+////        if (selectedFolder != null) {
+//            FXMLLoader loader = new FXMLLoader();
+//            loader.setLocation(getClass().getResource("window.fxml"));
+//            Parent rootViewParent = loader.load();
+//            Scene rootViewScene = new Scene(rootViewParent);
+//            RepositoryName controller = (RepositoryName)loader.getController();
+//            controller.initData("ofir");
+//            Stage window = (Stage)((javafx.scene.Node)actionEvent.getSource()).getScene().getWindow();
+//            window.setScene(rootViewScene);
+//            window.show();
+//
+//        Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
+//        primaryStage.setTitle("Magit");
+//        primaryStage.setScene(new Scene(root, 600, 400));
+//        primaryStage.show();
 //
 //            FolderPath = selectedFolder.getAbsolutePath();
 //            Parent root = FXMLLoader.load(getClass().getResource("window.fxml"));
@@ -71,7 +71,7 @@ public class Controller {
 //            newStage.show();
 
 //        }
-    }
+ //   }
 
     public void selectRepositoryName(javafx.event.ActionEvent actionEvent) throws IOException {
         String RepositoryName = input_user_name.getText();
