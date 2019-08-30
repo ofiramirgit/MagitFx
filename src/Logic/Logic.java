@@ -31,13 +31,30 @@ public class Logic {
 
 
     //---------------Getters&Setters-------------------------------------------------------
-    public void setM_ActiveUser(String i_ActiveUser) {
-        m_ActiveUser = i_ActiveUser;
+    public Boolean setM_ActiveUser(String i_ActiveUser) {
+        if(m_InputValidation.checkInputStringLen(i_ActiveUser)) {
+            m_ActiveUser = i_ActiveUser;
+            return true;
+        }
+        return false;
     }
 
     public void setM_ActiveRepositoryName(String m_ActiveRepositoryName) {
         this.m_ActiveRepositoryName = m_ActiveRepositoryName;
     }
+
+    /* Switch repository -- Start */
+    /* Case 3 */
+    public Boolean setM_ActiveRepository(String i_ActiveRepository)
+    {
+        if(m_FilesValidation.isRepository(i_ActiveRepository)) {
+            m_ActiveRepository = i_ActiveRepository;
+            return true;
+        }
+        return false;
+    }
+    /* Case 3 */
+    /* Switch repository -- End */
 
     //-------initRepository-------start------------------------------------------------------------------
 
