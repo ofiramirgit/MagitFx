@@ -1,8 +1,6 @@
 package Logic;
 
-import Logic.Objects.BlobData;
-import Logic.Objects.Commit;
-import Logic.Objects.Folder;
+import Logic.Objects.*;
 import Zip.ZipFile;
 import inputValidation.FilesValidation;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -13,11 +11,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-import static Logic.ConstantsEnums.EmptyString;
-import static Logic.ConstantsEnums.Separator;
+import static Logic.ConstantsEnums.*;
+import static Logic.ConstantsEnums.dateFormat;
 
 public class Logic {
 
@@ -29,7 +26,12 @@ public class Logic {
     private Map<String, String> m_CurrentCommitStateMap;
     private InputValidation m_InputValidation = new InputValidation();
 
-
+    public Logic() {
+        m_ActiveUser = "Administrator";
+        m_ActiveRepository = EmptyString;
+        m_ZipFile = new ZipFile();
+        m_CurrentCommitStateMap = new HashMap<>();
+    }
     //---------------Getters&Setters-------------------------------------------------------
     public Boolean setM_ActiveUser(String i_ActiveUser) {
         if(m_InputValidation.checkInputStringLen(i_ActiveUser)) {
@@ -55,6 +57,34 @@ public class Logic {
     }
     /* Case 3 */
     /* Switch repository -- End */
+
+    /* Delete Branch -- Start */
+    /* Case 9 */
+    public Boolean deleteBranch(String i_BranchName) {
+        Boolean bool = false;
+        if (getBranchActiveName().equals(i_BranchName))
+            bool = false;
+        else {
+            try {
+                File branchesNamesFile = new File(getPathFolder("branches") + File.separator + "NAMES.txt");
+                String branchesNamesContent = getContentOfFile(branchesNamesFile);
+                if (!branchesNamesContent.contains(i_BranchName))
+                    bool = false;
+                else {
+                    branchesNamesFile.delete();
+                    branchesNamesContent = branchesNamesContent.replace(System.lineSeparator() + i_BranchName, "");
+                    Path path = Paths.get(getPathFolder("branches") + File.separator + "NAMES.txt");
+                    Files.write(path, branchesNamesContent.getBytes(), StandardOpenOption.CREATE);
+                    bool = true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return bool;
+    }
+    /* Case 9 */
+    /* Delete Branch -- END */
 
     //-------initRepository-------start------------------------------------------------------------------
 
@@ -167,8 +197,271 @@ public class Logic {
 
     //-------Read XML-------end--------
 
+
+    /* Show All Branches -- Start */
+    /* Case 7 */
+    public List<BranchData> GetAllBranchesDetails() {
+        File branchesNamesFile = new File(getPathFolder("branches") + File.separator + "NAMES.txt");
+        List<BranchData> branchDataList = new ArrayList<>();
+        String[] branchesNamesArray = getContentOfFile(branchesNamesFile).split(System.lineSeparator());
+
+        for (String branchName : branchesNamesArray) {
+            Path branchPath = Paths.get(getPathFolder("branches") + File.separator + branchName + ".txt");
+
+            if (!getContentOfFile(new File(getPathFolder("branches"), branchName + ".txt")).equals(EmptyString)) {
+                String commitSha1 = getContentOfFile(new File(getPathFolder("branches"), branchName + ".txt"));
+                Commit commit = new Commit(getContentOfZipFile(getPathFolder("objects"), commitSha1));
+
+                branchDataList.add(new BranchData(branchName, getBranchActiveName().equals(branchName),
+                        commitSha1, commit.getM_Message()));
+            }
+        }
+        return branchDataList;
+    }
+    private String getBranchActiveName() {
+        String branchActiveName = EmptyString;
+
+        Path path = Paths.get(getPathFolder("branches") + File.separator + "HEAD.txt");
+        try {
+            branchActiveName = new String(Files.readAllBytes(path));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return branchActiveName;
+    }
+    /* Case 7 */
+    /* Show All Branches -- End */
     //-----------Files&Folders-------------------------------------
 
+    public boolean WcNotChanged() {
+        WorkingCopyStatus workingCopyStatus = ShowWorkingCopyStatus();
+        return workingCopyStatus.isNotChanged();
+    }
+    /* Case 5 */
+    /* ShowWorkingCopyStatus -- Start */
+    public WorkingCopyStatus ShowWorkingCopyStatus() {
+        WorkingCopyStatus wcStatus = new WorkingCopyStatus();
+        String rootFolderName = getRootFolderName();
+        File commitStatusFile = new File(getPathFolder(".magit") + File.separator + "CommitStatus.txt");
+        m_CurrentCommitStateMap.clear();
+
+        if(!getContentOfFile(commitStatusFile).isEmpty()) {
+            String[] commitStatusArr = getContentOfFile(commitStatusFile).split(System.lineSeparator());
+            if (commitStatusArr != null) {
+                for (String s : commitStatusArr) {
+                    String[] strings = s.split(Separator);
+                    m_CurrentCommitStateMap.put(strings[0], strings[1]);
+                }
+            }
+        }
+        wcStatus.setM_DeletedFilesList(m_CurrentCommitStateMap.keySet());
+        recursiveCompareWC(m_ActiveRepository, rootFolderName, wcStatus);
+
+        return wcStatus;
+    }
+    private void recursiveCompareWC(String stringPath, String fName, WorkingCopyStatus i_WcStatus) {
+        File file = new File(stringPath + File.separator + fName);
+
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                recursiveCompareWC(file.getAbsolutePath(), f.getName(), i_WcStatus);
+            }
+        } else // isFile
+        {
+            String sha1InCommit = m_CurrentCommitStateMap.get(file.getAbsolutePath());
+            String sha1InWC = DigestUtils.sha1Hex(getContentOfFile(file));
+
+            i_WcStatus.getM_DeletedFilesList().remove(file.getAbsolutePath());
+
+            if (sha1InCommit == null) {
+                i_WcStatus.getM_NewFilesList().add(file.getAbsolutePath());
+            } else if (!sha1InCommit.equals(sha1InWC)) {
+                i_WcStatus.getM_ChangedFilesList().add(file.getAbsolutePath());
+            }
+
+        }
+    }
+    /* Case 5 */
+    /* ShowWorkingCopyStatus -- End */
+
+    /* Create Commit -- Start */
+    /* Case 6 */
+
+    public WorkingCopyStatus createCommit(String i_Msg)
+    {
+        WorkingCopyStatus wcStatus = ShowWorkingCopyStatus();
+        String objectFolder;
+        if(!wcStatus.IsEmpty()) {
+            Commit newCommit = new Commit();
+            newCommit.setM_Message(i_Msg);
+            newCommit.setM_CreatedBy(m_ActiveUser);
+            newCommit.setM_PreviousSHA1("NONE");
+            newCommit.setM_PreviousSHA1merge("NONE");
+            newCommit.setM_CreatedTime(dateFormat.format(new Date()));
+
+            String rootFolderName = getRootFolderName();
+            File rootFolderFile = new File(m_ActiveRepository + File.separator + rootFolderName);
+            File commitStatusFile = new File(getPathFolder(".magit") + File.separator + "CommitStatus.txt");
+
+            try {
+                Files.write(Paths.get(commitStatusFile.getAbsolutePath()), "".getBytes(), StandardOpenOption.TRUNCATE_EXISTING);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            objectFolder = getPathFolder("objects");
+
+            if (!isFirstCommit()) {
+                String PreviousSHA1 = getContentOfFile(new File(getPathFolder("branches"), getBranchActiveName() + ".txt"));
+                newCommit.setM_PreviousSHA1(PreviousSHA1);
+            }
+
+            BlobData rootBlobData = recursiveTravelFolders(objectFolder, rootFolderFile, wcStatus);//throw all the WC files to WcCommit folder
+            newCommit.setM_MainSHA1(rootBlobData.getM_Sha1());
+            String commitSha1 = DigestUtils.sha1Hex(newCommit.toString());
+            m_ZipFile.zipFile(objectFolder, commitSha1, newCommit.toString());
+            updateBranchActiveCommit(commitSha1);
+        }
+        return wcStatus;
+    }
+    private void updateBranchActiveCommit(String i_CommitSha1) {
+        String activeBranchName = getBranchActiveName();
+        Path activeBranchPath = Paths.get(getPathFolder("branches") + File.separator + activeBranchName + ".txt");
+        try {
+            if (!Files.exists(activeBranchPath))
+                Files.createFile(activeBranchPath);
+            Files.write(activeBranchPath, i_CommitSha1.getBytes());
+        } catch (Exception e) {
+
+        }
+    }
+    public BlobData recursiveTravelFolders(String i_FolderToZipInto ,File i_File, WorkingCopyStatus i_WCstatus) {
+        String sha1;
+        BlobData newBlobData;
+        if (i_File.isDirectory()) {
+            Folder folder = new Folder();
+            for (final File f : i_File.listFiles())
+            {
+                if(!(f.isDirectory() && f.listFiles().length == 0))
+                {
+                    folder.AddNewItem(recursiveTravelFolders(i_FolderToZipInto, f, i_WCstatus));
+                }
+                else
+                {
+                    deleteFolder(f);
+                }
+            }
+
+            sha1 = DigestUtils.sha1Hex(folder.toString());
+            BlobData directoryBlob =
+                    new BlobData(i_File.getName(), sha1, ConstantsEnums.FileType.FOLDER,
+                            m_ActiveUser, dateFormat.format(new Date())
+                    );
+            m_ZipFile.zipFile(i_FolderToZipInto, sha1, folder.printArray());
+
+            return directoryBlob;
+        }
+        else { //isFile
+            Boolean fileChanged = false;
+
+            Blob blob = new Blob(getContentOfFile(i_File));
+            sha1 = DigestUtils.sha1Hex(blob.getM_Data());
+
+            fileChanged = isFileNeedCommit(i_File.getAbsolutePath(),i_WCstatus);
+
+            if(fileChanged)
+            {
+                m_ZipFile.zipFile(i_FolderToZipInto, sha1, getContentOfFile(i_File));
+            }
+
+            String toFile = i_File.getAbsolutePath() + Separator + sha1 + System.lineSeparator();
+            Path path = Paths.get(getPathFolder(".magit") + File.separator + "CommitStatus.txt");
+            try {
+                Files.write(path, toFile.getBytes(), StandardOpenOption.APPEND);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            newBlobData = new BlobData(i_File.getName(), sha1, ConstantsEnums.FileType.FILE,
+                    m_ActiveUser, dateFormat.format(new Date()));
+        }
+        return newBlobData;
+    }
+
+
+    private boolean isFirstCommit() {
+        String BranchName = getBranchActiveName();
+        return (getContentOfFile(new File (getPathFolder("branches") + File.separator + BranchName + ".txt")).equals(EmptyString));
+    }
+
+    private Boolean isFileNeedCommit(String i_Path, WorkingCopyStatus i_WCstatus)
+    {
+        return i_WCstatus.getM_NewFilesList().contains(i_Path) || i_WCstatus.getM_ChangedFilesList().contains(i_Path);
+    }
+
+    /* Case 6 */
+    /* Create Commit -- End */
+
+    /* Check out Head branch -- Start */
+    /* Case 10 */
+    public void CheckOutHeadBranch(String i_BranchName, Boolean i_toCommit,String Msg)
+    {
+        if(i_toCommit)
+            createCommit(Msg);
+
+        File rootFolder = new File(m_ActiveRepository + File.separator + getRootFolderName());
+        deleteFolder(rootFolder);
+        spreadCommitToWc(i_BranchName);
+        Path HeadFile = Paths.get(getPathFolder("branches") + File.separator + "HEAD.txt");
+        try {
+            Files.write(HeadFile,i_BranchName.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public void deleteFolder(File file) {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles())
+                deleteFolder(f);
+            if (!file.getName().equals(getRootFolderName()))
+                file.delete();
+        } else
+            file.delete();
+    }
+    /* Case 10 */
+    /* Check out Head branch -- END */
+    /* Create New Branch -- Start */
+    /* Case 8 */
+    public Boolean createNewBranch(String i_BranchName) {
+        Boolean branchNameNotExist = true;
+        String stringPath = getPathFolder("branches") + File.separator + "NAMES.txt";
+        File branchesNamesFile = new File(stringPath);
+        String branchesNames = getContentOfFile(branchesNamesFile);
+        String[] names = branchesNames.split(System.lineSeparator());
+        for (String name : names) {
+            if (name.equals(i_BranchName))
+                branchNameNotExist = false;
+
+        }
+        if (branchNameNotExist) {
+            String Sha1CurrentBranch = EmptyString;
+            Path path = Paths.get(stringPath);
+            Path BranchPath = Paths.get(getPathFolder("branches") + File.separator + i_BranchName + ".txt");
+            Sha1CurrentBranch = getContentOfFile(new File(getPathFolder("branches") + File.separator + getBranchActiveName() + ".txt"));
+            try {
+                Files.createFile(BranchPath);
+                Files.write(BranchPath, Sha1CurrentBranch.getBytes());
+                Files.write(path, (System.lineSeparator() + i_BranchName).getBytes(), StandardOpenOption.APPEND);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return branchNameNotExist;
+    }
+    /* Case 8 */
+    /* Create New Branch -- END */
     private String getContentOfFile(File i_File) {
         String fileContent = EmptyString;
         Path path = Paths.get(i_File.getAbsolutePath());
