@@ -9,12 +9,20 @@ public class WorkingCopyStatus
     private Set<String> m_DeletedFilesList;
     private List<String> m_ChangedFilesList = new ArrayList<>();
     private List<String> m_NewFilesList = new ArrayList<>();
+    private List<String> m_NotChangedList= new ArrayList<>();
 
     public Set<String> getM_DeletedFilesList() {
         return m_DeletedFilesList;
     }
+    public List<String> getM_NotChangedFilesList() {
+        return m_NotChangedList;
+    }
     public void setM_DeletedFilesList(Set<String> m_DeletedFilesList) {
         this.m_DeletedFilesList = m_DeletedFilesList;
+    }
+    public void setM_NotChangedFilesList(Set<String> i_NotChangedList) {
+        for(String str : i_NotChangedList)
+        this.m_NotChangedList.add(str);
     }
     public List<String> getM_ChangedFilesList() {
         return m_ChangedFilesList;

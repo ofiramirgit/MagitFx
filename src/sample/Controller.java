@@ -45,6 +45,8 @@ public class Controller {
     @FXML
     public Button btn_initRepository;
     @FXML
+    public Button btn_mergeBranches;
+    @FXML
     public TextField txtField_repositoryPath;
     @FXML
     public TextField txtField_userName;
@@ -207,6 +209,17 @@ public class Controller {
                 }
             }
         }
+    }
+
+    public void mergeBranches(javafx.event.ActionEvent actionEvent) {
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.setTitle("Input Branch Name");
+        dialog.setHeaderText("Insert Branch Name");
+        dialog.setContentText("Please enter repository name: ");
+        Optional<String> result = dialog.showAndWait();
+        //todo validation input
+        //todo no open changes
+        m_LogicManager.getConflictList(m_LogicManager.getBranchActiveName(),result.get());
     }
 
     public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
