@@ -286,26 +286,6 @@ public class Logic {
         return wcStatus;
     }
 
-//    public WorkingCopyStatus ShowWorkingCopyStatus() {
-//        WorkingCopyStatus wcStatus = new WorkingCopyStatus();
-//        String rootFolderName = getRootFolderName();
-//        File commitStatusFile = new File(getPathFolder(".magit") + File.separator + "CommitStatus.txt");
-//        m_CurrentCommitStateMap.clear();
-//
-//        if(!getContentOfFile(commitStatusFile).isEmpty()) {
-//            String[] commitStatusArr = getContentOfFile(commitStatusFile).split(System.lineSeparator());
-//            if (commitStatusArr != null) {
-//                for (String s : commitStatusArr) {
-//                    String[] strings = s.split(Separator);
-//                    m_CurrentCommitStateMap.put(strings[0], strings[1]);
-//                }
-//            }
-//        }
-//        wcStatus.setM_DeletedFilesList(m_CurrentCommitStateMap.keySet());
-//        recursiveCompareWC(m_ActiveRepository, rootFolderName, wcStatus);
-//
-//        return wcStatus;
-//    }
     private void recursiveCompareWC(String stringPath, String fName, WorkingCopyStatus i_WcStatus) {
         File file = new File(stringPath + File.separator + fName);
 
