@@ -1,8 +1,6 @@
 package Logic.Objects;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class WorkingCopyStatus
 {
@@ -10,6 +8,7 @@ public class WorkingCopyStatus
     private List<String> m_ChangedFilesList = new ArrayList<>();
     private List<String> m_NewFilesList = new ArrayList<>();
     private List<String> m_NotChangedList= new ArrayList<>();
+    private Map<String, String> m_PathSha1 = new HashMap<>();
 
     public Set<String> getM_DeletedFilesList() {
         return m_DeletedFilesList;
@@ -17,13 +16,35 @@ public class WorkingCopyStatus
     public List<String> getM_NotChangedFilesList() {
         return m_NotChangedList;
     }
-    public void setM_DeletedFilesList(Set<String> m_DeletedFilesList) {
-        this.m_DeletedFilesList = m_DeletedFilesList;
+    public void setM_DeletedFilesList(Set<String> i_DeletedFilesList) {
+
+        this.m_DeletedFilesList = clone(i_DeletedFilesList);
     }
+
+    private Set<String> clone(Set<String> i_deletedFilesList) {
+        Set returnSet = new HashSet();
+        for(String str : i_deletedFilesList)
+            returnSet.add(str);
+        return returnSet;
+    }
+
     public void setM_NotChangedFilesList(Set<String> i_NotChangedList) {
         for(String str : i_NotChangedList)
         this.m_NotChangedList.add(str);
     }
+
+    public void setM_NotChangedList(List<String> m_NotChangedList) {
+        this.m_NotChangedList = m_NotChangedList;
+    }
+
+    public List<String> getM_NotChangedList() {
+        return m_NotChangedList;
+    }
+
+    public Map<String, String> getM_PathSha1() {
+        return m_PathSha1;
+    }
+
     public List<String> getM_ChangedFilesList() {
         return m_ChangedFilesList;
     }

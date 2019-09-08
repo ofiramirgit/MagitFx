@@ -13,7 +13,9 @@ public class ConstantsEnums {
     public enum FileState{
         CREATED,
         DELETED,
-        CHANGED
+        UPDATED,
+        NOTCHANGED,
+        NONE
     }
 
     public static final String EmptyString = "";

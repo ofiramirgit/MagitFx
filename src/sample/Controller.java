@@ -152,6 +152,16 @@ public class Controller {
         btn_setUserName.setDisable(false);
     }
 
+    public void createCommit(javafx.event.ActionEvent actionEvent) {
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.setTitle("Commit Message");
+        dialog.setHeaderText("Insert Commit Message");
+        dialog.setContentText("Please enter Commit Message: ");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            m_LogicManager.createCommit(result.get());
+        }
+    }
     public void showBranchList(javafx.event.ActionEvent actionEvent) {
         List<BranchData> BranchesList = m_LogicManager.GetAllBranchesDetails();
         String stringToShow = "";
@@ -219,7 +229,7 @@ public class Controller {
         Optional<String> result = dialog.showAndWait();
         //todo validation input
         //todo no open changes
-        m_LogicManager.getConflictList(m_LogicManager.getBranchActiveName(),result.get());
+        m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(),result.get());
     }
 
     public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
