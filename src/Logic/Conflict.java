@@ -13,4 +13,16 @@ public class Conflict {
         this.m_theirs = m_theirs;
         this.m_father = m_father;
     }
+
+    public FileStruct getM_our() {
+        return m_our;
+    }
+
+    public FileStruct getM_theirs() {
+        return m_theirs;
+    }
+
+    public FileStruct getM_father() {
+        return m_father;
+    }
 }

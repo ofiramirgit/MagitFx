@@ -610,7 +610,7 @@ public class Logic {
         return Sha1Ours;
     }
 
-    public void MergeBranches(String oursBranch, String theirsBranch) {
+    public OpenAndConflict MergeBranches(String oursBranch, String theirsBranch) {
         String sharedFatherSha1 = findSharedFather(oursBranch, theirsBranch);
         String Sha1Theirs = getContentOfFile(new File(getPathFolder("branches"), theirsBranch + ".txt"));
         String ActiveBranch = getBranchActiveName();
@@ -624,7 +624,7 @@ public class Logic {
         spreadFolder(sharedFatherSha1, "Father");
         WorkingCopyStatus wcOurs = ShowWorkingCopyStatus(getPathFolder("merge") + File.separator + "FatherCommitStatus.txt");
 
-         spreadFolder(Sha1Theirs,"Theirs");
+        spreadFolder(Sha1Theirs,"Theirs");
         CheckOutHeadBranch(theirsBranch, false, "");
         WorkingCopyStatus wcTheirs = ShowWorkingCopyStatus(getPathFolder("merge") + File.separator + "FatherCommitStatus.txt");
 
@@ -634,8 +634,8 @@ public class Logic {
         ArrayList<Conflict> ConflictFiles = new ArrayList<>();
 
         fillConflictAndOpenChangesList(wcOurs, wcTheirs, OpenChanges, ConflictFiles);
-
-
+        OpenAndConflict openAndConflict = new OpenAndConflict(ConflictFiles,OpenChanges);
+        return openAndConflict;
     }
 
     private void fillConflictAndOpenChangesList(WorkingCopyStatus wcOurs, WorkingCopyStatus wcTheirs,
@@ -678,7 +678,7 @@ public class Logic {
 
                 if (DigestUtils.sha1Hex(getContentOfFile(deletePathFileTheirs.toFile()))
                         .equals(DigestUtils.sha1Hex(getContentOfFile(deletePathFileFather.toFile())))) {//file in theirs is the same in father
-                    openChanges.add(new OpenChange(Paths.get(deleteFile), DELETED));
+                    openChanges.add(new OpenChange(deletePathFileTheirs, DELETED));
                 } else {//file in theirs no the same in father
                     conflictFiles.add(new Conflict(
                             new FileStruct(Paths.get(deleteFile),DELETED),
@@ -705,9 +705,25 @@ public class Logic {
                 updatedTheirs.remove(updateFile);
             }
             else
-            {
+            {//file updated in ours and not in theirs
                 openChanges.add(new OpenChange(Paths.get(updateFile),UPDATED));
             }
+        }
+        for(String notChanged : NotChangedOurs) {//notChanged
+            Path updatePathFileTheirs = Paths.get(notChanged.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Theirs"));
+            Path updatePathFileFather = Paths.get(notChanged.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Father"));
+            if (NotChangedTheirs.contains(notChanged)) {//file updated in ours and theirs
+                openChanges.add(new OpenChange(Paths.get(notChanged),NOTCHANGED));
+                NotChangedTheirs.remove(notChanged);
+            }
+        }
+        //all deleted in theirs NOT deleted in ours -> not possiable
+        //all updated in theirs NOT exist in ours -> not possiable
+        //all not-changed in theirs NOT exist in ours-> not possiable
+        //all created in theirs Not Exist in ours-> so all created is open changes!!!
+        for (String newFile : newTheirs) {
+            Path updatePathFileTheirs = Paths.get(newFile.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Theirs"));
+            openChanges.add(new OpenChange(updatePathFileTheirs,CREATED));
         }
     }
 }

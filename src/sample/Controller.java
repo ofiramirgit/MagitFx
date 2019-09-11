@@ -11,10 +11,12 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.text.TextFlow;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-
+import Logic.OpenAndConflict;
+import Logic.Conflict;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -58,6 +60,10 @@ public class Controller {
     public Tab tab_branches;
     @FXML
     public TextArea textArea;
+    @FXML
+    public ListView listviewConflict;
+    @FXML
+    public Stage conflictView;
 
     public void initRepository(javafx.event.ActionEvent actionEvent) throws IOException {
         final DirectoryChooser dc = new DirectoryChooser();
@@ -170,6 +176,16 @@ public class Controller {
         textArea.setText(stringToShow);
     }
 
+    public void CheckOutHeadBranch(javafx.event.ActionEvent actionEvent){
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.setTitle("change head Branch");
+        dialog.setHeaderText("Insert Branch Name");
+        dialog.setContentText("Please enter branch name: ");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            m_LogicManager.CheckOutHeadBranch(result.get(),false,"");
+        }
+    }
     public void createNewBranch(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = new TextInputDialog("");
         dialog.setTitle("Create New Branch");
@@ -229,7 +245,31 @@ public class Controller {
         Optional<String> result = dialog.showAndWait();
         //todo validation input
         //todo no open changes
-        m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(),result.get());
+        OpenAndConflict openAndConflict = m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(),result.get());
+        String s="";
+//        ListView<Conflict> listViewConflict = new ListView<>();
+        for(Conflict c: openAndConflict.getConflictList()){
+            listviewConflict.getItems().add(c);
+        }
+        listviewConflict.setCellFactory(param -> new ListCell<Conflict>() {
+            @Override
+            protected void updateItem(Conflict item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null || item.getM_our().getM_filePath() == null) {
+                    setText(null);
+                } else {
+                    setText(item.getM_our().getM_filePath().toString());
+                }
+            }
+        });
+        listviewConflict.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        listviewConflict.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+
+            }
+        });
     }
 
     public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
