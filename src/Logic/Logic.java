@@ -20,11 +20,10 @@ import static Logic.ConstantsEnums.dateFormat;
 
 public class Logic {
 
-    FilesValidation m_FilesValidation = new FilesValidation();
+    private FilesValidation m_FilesValidation = new FilesValidation();
     private String m_ActiveUser;
     private String m_ActiveRepository;
-    private String m_ActiveRepositoryName;
-    private ZipFile m_ZipFile = new ZipFile();
+    private ZipFile m_ZipFile;
     private Map<String, String> m_CurrentCommitStateMap;
     private InputValidation m_InputValidation = new InputValidation();
 
@@ -75,6 +74,7 @@ public class Logic {
                 Files.write(materFilePath, "".getBytes());
                 Files.write(rootFolderNamePath, RepositoryName.getBytes());
             } catch (IOException ioExceptionObj) {
+                //todo catch
             }
         }
     }
@@ -86,7 +86,7 @@ public class Logic {
 
         String[] RepositoryLocation = xmlReader.getLocation();
         m_ActiveRepository = RepositoryLocation[0] + File.separator + RepositoryLocation[1];
-        m_ActiveRepositoryName = RepositoryLocation[1];
+        String m_ActiveRepositoryName = RepositoryLocation[1];
         if (!m_InputValidation.checkInputActiveRepository(RepositoryLocation[0] + File.separator + RepositoryLocation[1]))
             createRepository(RepositoryLocation[0],RepositoryLocation[1]);
         else
@@ -122,7 +122,7 @@ public class Logic {
     //-------------------------------------------COMMIT  START-------------------------------------
 
     //-------Commit---------Start--------
-    public WorkingCopyStatus createCommit(String i_Msg) {
+    public void createCommit(String i_Msg) {
         WorkingCopyStatus wcStatus = ShowWorkingCopyStatus(getPathFolder(".magit") + File.separator + "CommitStatus.txt");
         String objectFolder;
         if (!wcStatus.IsEmpty()) {
@@ -157,15 +157,14 @@ public class Logic {
             m_ZipFile.zipFile(objectFolder, commitSha1, newCommit.toString());
             updateBranchActiveCommit(commitSha1);
         }
-        return wcStatus;
     }
-    public BlobData recursiveTravelFolders(String i_FolderToZipInto, File i_File, WorkingCopyStatus i_WCstatus) {
+    private BlobData recursiveTravelFolders(String i_FolderToZipInto, File i_File, WorkingCopyStatus i_WCstatus) {
         String sha1;
         BlobData newBlobData;
         if (i_File.isDirectory()) {
             Folder folder = new Folder();
-            for (final File f : i_File.listFiles()) {//todo null
-                if (!(f.isDirectory() && f.listFiles().length == 0)) {
+            for (final File f : i_File.listFiles()) {//todo file nullpointer
+                if (!(f.isDirectory() && f.listFiles().length == 0)) {//todo file nullpointer
                     folder.AddNewItem(recursiveTravelFolders(i_FolderToZipInto, f, i_WCstatus));
                 } else {
                     deleteFolder(f);
@@ -226,7 +225,7 @@ public class Logic {
     //-------Commit---------End--------
 
     //-------Working Copy---------Start--------
-    public WorkingCopyStatus ShowWorkingCopyStatus(String pathCommitStatus) {
+    private WorkingCopyStatus ShowWorkingCopyStatus(String pathCommitStatus) {
 
         WorkingCopyStatus wcStatus = new WorkingCopyStatus();
         String rootFolderName = getRootFolderName();
@@ -235,11 +234,9 @@ public class Logic {
 
         if (!getContentOfFile(commitStatusFile).isEmpty()) {
             String[] commitStatusArr = getContentOfFile(commitStatusFile).split(System.lineSeparator());
-            if (commitStatusArr != null) {
-                for (String s : commitStatusArr) {
-                    String[] strings = s.split(Separator);
-                    m_CurrentCommitStateMap.put(strings[0], strings[1]);
-                }
+            for (String s : commitStatusArr) {
+                String[] strings = s.split(Separator);
+                m_CurrentCommitStateMap.put(strings[0], strings[1]);
             }
         }
 
@@ -261,7 +258,7 @@ public class Logic {
         File file = new File(stringPath + File.separator + fName);
 
         if (file.isDirectory()) {
-            for (File f : file.listFiles()) {
+            for (File f : file.listFiles()) {//todo file null pointer
                 recursiveCompareWC(file.getAbsolutePath(), f.getName(), i_WcStatus);
             }
         } else // isFile
@@ -293,8 +290,6 @@ public class Logic {
         String[] branchesNamesArray = getContentOfFile(branchesNamesFile).split(System.lineSeparator());
 
         for (String branchName : branchesNamesArray) {
-            Path branchPath = Paths.get(getPathFolder("branches") + File.separator + branchName + ".txt");
-
             if (!getContentOfFile(new File(getPathFolder("branches"), branchName + ".txt")).equals(EmptyString)) {
                 String commitSha1 = getContentOfFile(new File(getPathFolder("branches"), branchName + ".txt"));
                 Commit commit = new Commit(getContentOfZipFile(getPathFolder("objects"), commitSha1));
@@ -326,7 +321,7 @@ public class Logic {
 
     //-------CreateNewBranch---------Start--------
     public Boolean createNewBranch(String i_BranchName) {
-        Boolean branchNameNotExist = true;
+        Boolean branchNameNotExist = true;//todo boolean primitive
         String stringPath = getPathFolder("branches") + File.separator + "NAMES.txt";
         File branchesNamesFile = new File(stringPath);
         String branchesNames = getContentOfFile(branchesNamesFile);
@@ -334,10 +329,9 @@ public class Logic {
         for (String name : names) {
             if (name.equals(i_BranchName))
                 branchNameNotExist = false;
-
         }
         if (branchNameNotExist) {
-            String Sha1CurrentBranch = EmptyString;
+            String Sha1CurrentBranch;
             Path path = Paths.get(stringPath);
             Path BranchPath = Paths.get(getPathFolder("branches") + File.separator + i_BranchName + ".txt");
             Sha1CurrentBranch = getContentOfFile(new File(getPathFolder("branches") + File.separator + getBranchActiveName() + ".txt"));
@@ -356,7 +350,7 @@ public class Logic {
 
     //-------DeleteExistBranch---------Start--------
     public Boolean deleteBranch(String i_BranchName) {
-        Boolean bool = false;
+        Boolean bool = false;//todo boolean primitive
         if (getBranchActiveName().equals(i_BranchName))
             bool = false;
         else {
@@ -366,7 +360,7 @@ public class Logic {
                 if (!branchesNamesContent.contains(i_BranchName))
                     bool = false;
                 else {
-                    branchesNamesFile.delete();
+                    branchesNamesFile.delete();//todo delete return value
                     branchesNamesContent = branchesNamesContent.replace(System.lineSeparator() + i_BranchName, "");
                     Path path = Paths.get(getPathFolder("branches") + File.separator + "NAMES.txt");
                     Files.write(path, branchesNamesContent.getBytes(), StandardOpenOption.CREATE);
@@ -405,10 +399,9 @@ public class Logic {
         ArrayList<Conflict> ConflictFiles = new ArrayList<>();
 
         fillConflictAndOpenChangesList(wcOurs, wcTheirs, OpenChanges, ConflictFiles);
-        OpenAndConflict openAndConflict = new OpenAndConflict(ConflictFiles,OpenChanges);
-        return openAndConflict;
+        return (new OpenAndConflict(ConflictFiles,OpenChanges));
     }
-    public String findSharedFather(String oursBranch, String theirsBranch) {
+    private String findSharedFather(String oursBranch, String theirsBranch) {
         String Sha1Ours = getContentOfFile(new File(getPathFolder("branches"), oursBranch + ".txt"));
         String Sha1Theirs = getContentOfFile(new File(getPathFolder("branches"), theirsBranch + ".txt"));
         System.out.println("ours: " + Sha1Ours + "   " + "theirs: " + Sha1Theirs);
@@ -508,17 +501,11 @@ public class Logic {
             }
         }
         for(String notChanged : NotChangedOurs) {//notChanged
-            Path updatePathFileTheirs = Paths.get(notChanged.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Theirs"));
-            Path updatePathFileFather = Paths.get(notChanged.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Father"));
             if (NotChangedTheirs.contains(notChanged)) {//file updated in ours and theirs
                 openChanges.add(new OpenChange(Paths.get(notChanged),NOTCHANGED));
                 NotChangedTheirs.remove(notChanged);
             }
         }
-        //all deleted in theirs NOT deleted in ours -> not possiable
-        //all updated in theirs NOT exist in ours -> not possiable
-        //all not-changed in theirs NOT exist in ours-> not possiable
-        //all created in theirs Not Exist in ours-> so all created is open changes!!!
         for (String newFile : newTheirs) {
             Path updatePathFileTheirs = Paths.get(newFile.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Theirs"));
             openChanges.add(new OpenChange(updatePathFileTheirs,CREATED));
@@ -527,7 +514,6 @@ public class Logic {
     //-------mergeBranches---------End----------
 
     //-------------------------------------------BRANCH  END-------------------------------------
-
 
     //-------------------------------------------GENERAL  START-------------------------------------
     //-------Files&Folders---------Start----------
@@ -538,14 +524,14 @@ public class Logic {
         else
             return EmptyString;
     }
-    public void deleteFolder(File file) {
+    private void deleteFolder(File file) {
         if (file.isDirectory()) {
-            for (File f : file.listFiles())
+            for (File f : file.listFiles())//todo file nullpointer
                 deleteFolder(f);
             if (!file.getName().equals(getRootFolderName()))
-                file.delete();
+                file.delete();//todo delete return value
         } else
-            file.delete();
+            file.delete();//todo delete return value
     }
     private String getContentOfFile(File i_File) {
         String fileContent = EmptyString;
@@ -564,10 +550,10 @@ public class Logic {
         m_ZipFile.unZipIt(i_Path + File.separator + i_ZipName + ".zip", i_Path);
         File unZippedFile = new File(i_Path + File.separator + i_ZipName + ".txt");
         String contentOfFile = getContentOfFile(unZippedFile);
-        unZippedFile.delete();
+        unZippedFile.delete();//todo delete return value
         return contentOfFile;
     }
-    public String getPathFolder(String i_Folder) {
+    private String getPathFolder(String i_Folder) {
         String path = EmptyString;
         switch (i_Folder) {
             case "objects":
