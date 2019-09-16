@@ -44,7 +44,8 @@ public class Controller {
     @FXML
     public ListView listviewConflict;
 
-
+    //-------------Repository - Start--------------------------
+    //create repository
     public void initRepository(javafx.event.ActionEvent actionEvent) throws IOException {
 
         final DirectoryChooser dc = new DirectoryChooser();
@@ -63,9 +64,7 @@ public class Controller {
             }
         }
     }
-
-
-
+    //Load Repository XML
     public void readXML(javafx.event.ActionEvent actionEvent) { //need to add check
         Boolean exist=false;
         final FileChooser dc = new FileChooser();
@@ -86,7 +85,7 @@ public class Controller {
         Thread thread = new Thread(task);
         thread.start();
     }
-
+    //Switch Repository
     public void switchRepository(javafx.event.ActionEvent actionEvent) throws IOException {
         final DirectoryChooser dc = new DirectoryChooser();
         File selectedFolder = dc.showDialog(null);
@@ -100,7 +99,7 @@ public class Controller {
             }
         }
     }
-
+    //Set User Name
     public void setUserName(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = TextDialogCreator("Input User Name","Insert User Name","Please enter user name: ");
         Optional<String> result = dialog.showAndWait();
@@ -114,15 +113,9 @@ public class Controller {
             }
         }
     }
+    //-------------Repository - End--------------------------
 
-    public void unDisableRepositorySection() {
-        txtField_userName.setText("Administrator");
-        tab_fileCommit.setDisable(false);
-        tab_branches.setDisable(false);
-        btn_switchRepository.setDisable(false);
-        btn_setUserName.setDisable(false);
-    }
-
+    //-------------Files & Commits - Start--------------------------
     public void createCommit(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = TextDialogCreator("Commit Message","Insert Commit Message","Please enter Commit Message: ");
         Optional<String> result = dialog.showAndWait();
@@ -130,6 +123,10 @@ public class Controller {
             m_LogicManager.createCommit(result.get());
         }
     }
+    //-------------Files & Commits - End--------------------------
+
+    //-------------Branches - Start--------------------------
+   //Show All Branches
     public void showBranchList(javafx.event.ActionEvent actionEvent) {
         List<BranchData> BranchesList = m_LogicManager.GetAllBranchesDetails();
         String stringToShow = "";
@@ -137,14 +134,7 @@ public class Controller {
             stringToShow += branch.toString();
         textArea.setText(stringToShow);
     }
-
-    public void CheckOutHeadBranch(javafx.event.ActionEvent actionEvent){
-        TextInputDialog dialog = TextDialogCreator("change head Branch","Insert Branch Name","Please enter branch name: ");
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            m_LogicManager.CheckOutHeadBranch(result.get(),false,"");
-        }
-    }
+    //Create New Branch
     public void createNewBranch(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
@@ -179,7 +169,29 @@ public class Controller {
             }
         }
     }
-
+    //Delete Exist Branch
+    public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
+        TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
+        Optional<String> result = dialog.showAndWait();
+        if(!m_LogicManager.deleteBranch(result.get()))
+        {
+            Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Branch is Active!","the branch you selected is Active");
+            alert.showAndWait();
+        }
+        else {
+            Alert success = alertCreator(Alert.AlertType.INFORMATION,"Branch deleted successfully.","Branch deleted successfully.","Branch deleted successfully.");
+            success.showAndWait();
+        }
+    }
+    //Replace Head Branch
+    public void CheckOutHeadBranch(javafx.event.ActionEvent actionEvent){
+        TextInputDialog dialog = TextDialogCreator("change head Branch","Insert Branch Name","Please enter branch name: ");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            m_LogicManager.CheckOutHeadBranch(result.get(),false,"");
+        }
+    }
+    //Merge
     public void mergeBranches(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = TextDialogCreator("Input Branch Name","Insert Branch Name","Please enter repository name: ");
         Optional<String> result = dialog.showAndWait();
@@ -211,19 +223,16 @@ public class Controller {
             }
         });
     }
+    //-------------Branches - End--------------------------
 
-    public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
-        TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
-        Optional<String> result = dialog.showAndWait();
-        if(!m_LogicManager.deleteBranch(result.get()))
-        {
-            Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Branch is Active!","the branch you selected is Active");
-            alert.showAndWait();
-        }
-        else {
-            Alert success = alertCreator(Alert.AlertType.INFORMATION,"Branch deleted successfully.","Branch deleted successfully.","Branch deleted successfully.");
-            success.showAndWait();
-        }
+    //-------------General - Start--------------------------
+
+    public void unDisableRepositorySection() {
+        txtField_userName.setText("Administrator");
+        tab_fileCommit.setDisable(false);
+        tab_branches.setDisable(false);
+        btn_switchRepository.setDisable(false);
+        btn_setUserName.setDisable(false);
     }
 
     private TextInputDialog TextDialogCreator(String i_Title, String i_Header, String i_Content) {
@@ -241,6 +250,7 @@ public class Controller {
         dialog.setContentText(i_Content);
         return dialog;
     }
+    //-------------General - End--------------------------
 
 }
 
