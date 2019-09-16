@@ -6,6 +6,7 @@ import Logic.Objects.Commit;
 import Logic.Objects.Folder;
 import Zip.ZipFile;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.w3c.dom.NodeList;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -37,6 +38,7 @@ public class XmlReader {
             InputStream inputStream = new FileInputStream(i_XMLLocation);
             try {
                 magitRepository = deserializeFrom(inputStream);
+
                 m_ZipFile = new Zip.ZipFile();
                 xmlFileIsValid_oneId32();
             } catch (JAXBException e) {
@@ -76,6 +78,7 @@ public class XmlReader {
                 checkIfCommitExist(branch.getPointedCommit().getId());
                 String CommitSha1 = buildCommit(magitRepository.getMagitCommits().getMagitSingleCommit().get(branch.getPointedCommit().getId() - 1));
                 updateBranchCommit(CommitSha1, branch.getName());
+
             }
         }
         catch (IOException e) {
