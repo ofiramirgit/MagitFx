@@ -1,45 +1,26 @@
 package sample;
 import Logic.Logic;
 import Logic.Objects.BranchData;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import com.sun.org.omg.CORBA.Repository;
-import inputValidation.FilesValidation;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.text.TextFlow;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import Logic.OpenAndConflict;
 import Logic.Conflict;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
-
 import  Logic.XmlException;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
-
-import static Logic.ConstantsEnums.EmptyString;
-import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Node;
-import Logic.XmlException;
+import static Logic.ConstantsEnums.*;
 
 public class Controller {
 
-
     Logic m_LogicManager = new Logic();
-    private String FolderPath;
-    @FXML
-    private Stage newStage = new Stage();
+
     @FXML
     public Button btn_loadXml;
     @FXML
@@ -62,35 +43,28 @@ public class Controller {
     public TextArea textArea;
     @FXML
     public ListView listviewConflict;
-    @FXML
-    public Stage conflictView;
+
 
     public void initRepository(javafx.event.ActionEvent actionEvent) throws IOException {
+
         final DirectoryChooser dc = new DirectoryChooser();
         File selectedFolder = dc.showDialog(null);
         if (selectedFolder != null) {
-            TextInputDialog dialog = new TextInputDialog("");
-            dialog.setTitle("Input Repository Name");
-            dialog.setHeaderText("Insert Repository Name");
-            dialog.setContentText("Please enter repository name: ");
-
+            TextInputDialog dialog = TextDialogCreator("Input Repository Name","Insert Repository Name","Please enter repository name: ");
             Optional<String> result = dialog.showAndWait();
             if (result.isPresent()) {
-                System.out.println("Repository Path: " + selectedFolder.getAbsolutePath() + result.get());
                 if (m_LogicManager.initRepository(selectedFolder.getAbsolutePath(), result.get())) {
                     txtField_repositoryPath.setText(selectedFolder.getAbsolutePath() + File.separator + result.get());
                     unDisableRepositorySection();
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("Warning");
-                    alert.setHeaderText("Repository Alreadt Exist!");
-                    alert.setContentText("repository alerady exists.");
-
+                    Alert alert = alertCreator(Alert.AlertType.WARNING,"Warning","Repository Alreadt Exist!","repository alerady exists.");
                     alert.showAndWait();
                 }
             }
         }
     }
+
+
 
     public void readXML(javafx.event.ActionEvent actionEvent) { //need to add check
         Boolean exist=false;
@@ -121,30 +95,21 @@ public class Controller {
                 txtField_repositoryPath.setText(selectedFolder.getAbsolutePath());
                 txtField_userName.setText("Administrator");
             } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Repository Not Exist");
-                alert.setContentText("the folder you selected isn't repository");
+                Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Repository Not Exist","the folder you selected isn't repository");
                 alert.showAndWait();
             }
         }
     }
 
     public void setUserName(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = new TextInputDialog("");
-        dialog.setTitle("Input User Name");
-        dialog.setHeaderText("Insert User Name");
-        dialog.setContentText("Please enter user name: ");
+        TextInputDialog dialog = TextDialogCreator("Input User Name","Insert User Name","Please enter user name: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             if (m_LogicManager.setM_ActiveUser(result.get())) {
                 txtField_userName.setText(result.get());
                 System.out.println("User Name: " + result.get());
             } else {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("UnValid User Name Input");
-                alert.setContentText("user name input is unvalid. 1-50 characters");
+                Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","UnValid User Name Input","user name input is unvalid. 1-50 characters");
                 alert.showAndWait();
             }
         }
@@ -159,10 +124,7 @@ public class Controller {
     }
 
     public void createCommit(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = new TextInputDialog("");
-        dialog.setTitle("Commit Message");
-        dialog.setHeaderText("Insert Commit Message");
-        dialog.setContentText("Please enter Commit Message: ");
+        TextInputDialog dialog = TextDialogCreator("Commit Message","Insert Commit Message","Please enter Commit Message: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             m_LogicManager.createCommit(result.get());
@@ -177,33 +139,21 @@ public class Controller {
     }
 
     public void CheckOutHeadBranch(javafx.event.ActionEvent actionEvent){
-        TextInputDialog dialog = new TextInputDialog("");
-        dialog.setTitle("change head Branch");
-        dialog.setHeaderText("Insert Branch Name");
-        dialog.setContentText("Please enter branch name: ");
+        TextInputDialog dialog = TextDialogCreator("change head Branch","Insert Branch Name","Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             m_LogicManager.CheckOutHeadBranch(result.get(),false,"");
         }
     }
     public void createNewBranch(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = new TextInputDialog("");
-        dialog.setTitle("Create New Branch");
-        dialog.setHeaderText("Insert Branch Name");
-        dialog.setContentText("Please enter branch name: ");
+        TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             if (!m_LogicManager.createNewBranch(result.get())) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Error");
-                alert.setHeaderText("Error! Branch Name Exist!");
-                alert.setContentText("Error! Branch Name Exist!");
+                Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Error! Branch Name Exist!","Error! Branch Name Exist!");
                 alert.showAndWait();
             } else {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Information");
-                alert.setHeaderText("Branch created successfully.");
-                alert.setContentText("Do you want to check out active branch and load this branch?");
+                Alert alert = alertCreator(Alert.AlertType.CONFIRMATION,"Information","Branch created successfully.","Do you want to check out active branch and load this branch?");
 
                 ButtonType buttonYes = new ButtonType("Yes");
                 ButtonType buttonNo = new ButtonType("No");
@@ -216,19 +166,12 @@ public class Controller {
                 if (resultYesNo.get() == buttonYes) {
                     if (m_LogicManager.WcNotChanged()) {
                         m_LogicManager.CheckOutHeadBranch(result.get(), false, EmptyString);
-                        Alert succes = new Alert(Alert.AlertType.INFORMATION);
-                        succes.setTitle("Head branch checked out successfully.");
-                        succes.setHeaderText("Head branch checked out successfully.");
-                        succes.setContentText("Head branch checked out successfully.");
-                        alert.showAndWait();
+                        Alert success = alertCreator(Alert.AlertType.INFORMATION,"Head branch checked out successfully.","Head branch checked out successfully.","Head branch checked out successfully.");
+                        success.showAndWait();
                     } else if (resultYesNo.get() == buttonNo) {
                         System.out.println("There is open changes. check out branch failed.");
-                        Alert warrning = new Alert(Alert.AlertType.WARNING);
-                        warrning.setTitle("Check Out Branch Faild");
-                        warrning.setHeaderText("There is open changes. check out branch failed.");
-                        warrning.setContentText("There is open changes. check out branch failed.");
-
-                        warrning.showAndWait();
+                        Alert warning = alertCreator(Alert.AlertType.WARNING,"Check Out Branch Faild","There is open changes. check out branch failed.","There is open changes. check out branch failed.");
+                        warning.showAndWait();
                     } else {
                         // ... user chose CANCEL or closed the dialog
                     }
@@ -238,10 +181,7 @@ public class Controller {
     }
 
     public void mergeBranches(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = new TextInputDialog("");
-        dialog.setTitle("Input Branch Name");
-        dialog.setHeaderText("Insert Branch Name");
-        dialog.setContentText("Please enter repository name: ");
+        TextInputDialog dialog = TextDialogCreator("Input Branch Name","Insert Branch Name","Please enter repository name: ");
         Optional<String> result = dialog.showAndWait();
         //todo validation input
         //todo no open changes
@@ -273,27 +213,35 @@ public class Controller {
     }
 
     public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
-        TextInputDialog dialog = new TextInputDialog("");
-        dialog.setTitle("Create New Branch");
-        dialog.setHeaderText("Insert Branch Name");
-        dialog.setContentText("Please enter branch name: ");
+        TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
         if(!m_LogicManager.deleteBranch(result.get()))
         {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("Error");
-            alert.setHeaderText("Branch is Active!");
-            alert.setContentText("the branch you selected is Active");
+            Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Branch is Active!","the branch you selected is Active");
             alert.showAndWait();
         }
         else {
-            Alert succes = new Alert(Alert.AlertType.INFORMATION);
-            succes.setTitle("Branch deleted successfully.");
-            succes.setHeaderText("Branch deleted successfully.");
-            succes.setContentText("Branch deleted successfully.");
-            succes.showAndWait();
+            Alert success = alertCreator(Alert.AlertType.INFORMATION,"Branch deleted successfully.","Branch deleted successfully.","Branch deleted successfully.");
+            success.showAndWait();
         }
     }
+
+    private TextInputDialog TextDialogCreator(String i_Title, String i_Header, String i_Content) {
+        TextInputDialog dialog = new TextInputDialog("");
+        dialog.setTitle(i_Title);
+        dialog.setHeaderText(i_Header);
+        dialog.setContentText(i_Content);
+        return dialog;
+    }
+
+    private Alert alertCreator(Alert.AlertType alertType, String i_Title, String i_Header, String i_Content) {
+        Alert dialog = new Alert(alertType);
+        dialog.setTitle(i_Title);
+        dialog.setHeaderText(i_Header);
+        dialog.setContentText(i_Content);
+        return dialog;
+    }
+
 }
 
 

@@ -18,6 +18,11 @@ public class ConstantsEnums {
         NONE
     }
 
+    public enum DialogType {
+        TEXT,
+        ALERT
+    }
+
     public static final String EmptyString = "";
     public static final String Separator = ", ";
     public static final Integer NameLength = 50;
