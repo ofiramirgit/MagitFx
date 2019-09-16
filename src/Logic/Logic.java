@@ -363,7 +363,7 @@ public class Logic {
             if (!Files.exists(activeBranchPath))
                 Files.createFile(activeBranchPath);
             Files.write(activeBranchPath, i_CommitSha1.getBytes());
-        } catch (Exception e) {
+        } catch (Exception ex) {
 
         }
     }
