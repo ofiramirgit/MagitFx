@@ -5,6 +5,7 @@ import Zip.ZipFile;
 import inputValidation.FilesValidation;
 import org.apache.commons.codec.digest.DigestUtils;
 
+import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ public class Logic {
     private FilesValidation m_FilesValidation = new FilesValidation();
     private String m_ActiveUser;
     private String m_ActiveRepository;
+    private String m_ActiveRepositoryName;
     private ZipFile m_ZipFile;
     private Map<String, String> m_CurrentCommitStateMap;
     private InputValidation m_InputValidation = new InputValidation();
@@ -82,7 +84,12 @@ public class Logic {
 
     //-------Read XML-------------Start---------
     public void readXML(String i_XmlFilePath) throws XmlException {
-        XmlReader xmlReader = new XmlReader(i_XmlFilePath);
+        XmlReader xmlReader = new XmlReader();
+        try {
+            xmlReader.ReadXml(i_XmlFilePath);
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        }
 
         String[] RepositoryLocation = xmlReader.getLocation();
         m_ActiveRepository = RepositoryLocation[0] + File.separator + RepositoryLocation[1];

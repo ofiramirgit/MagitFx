@@ -66,7 +66,7 @@ public class Controller {
     }
     //Load Repository XML
     public void readXML(javafx.event.ActionEvent actionEvent) { //need to add check
-        Boolean exist=false;
+       /* Boolean exist=false;
         final FileChooser dc = new FileChooser();
         File selectedXML = dc.showOpenDialog(null);
 
@@ -83,7 +83,12 @@ public class Controller {
         };
 
         Thread thread = new Thread(task);
-        thread.start();
+        thread.start();*/
+        try {
+            m_LogicManager.readXML("XML/ex2-small.xml");
+        } catch (XmlException e) {
+            e.printStackTrace();
+        }
     }
     //Switch Repository
     public void switchRepository(javafx.event.ActionEvent actionEvent) throws IOException {
