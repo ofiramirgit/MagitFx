@@ -26,6 +26,7 @@ public class XmlReader {
     private MagitRepositoryType magitRepository;
     private ZipFile m_ZipFile;
     private String m_Location;
+    private static final String JAXB_XML_GAME_PACKAGE_NAME = "GeneratedXML";
 
     public XmlReader() throws XmlException {
         /*try {
@@ -51,11 +52,23 @@ public class XmlReader {
     }
 
     public void ReadXml(String i_Location) throws JAXBException {
-        JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
-        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-        JAXBElement<MagitRepositoryType> unmarshalledObject = (JAXBElement<MagitRepositoryType>) unmarshaller.unmarshal(ClassLoader.getSystemResourceAsStream(i_Location));
-        magitRepository = unmarshalledObject.getValue();
+        try {
+            InputStream inputStream = new FileInputStream(i_Location);
+
+
+//        JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+            JAXBContext jc = JAXBContext.newInstance(JAXB_XML_GAME_PACKAGE_NAME);
+//        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+            Unmarshaller u = jc.createUnmarshaller();
+            magitRepository= (MagitRepositoryType) u.unmarshal(inputStream);
+//            JAXBElement<MagitRepositoryType> unmarshalledObject = (JAXBElement<MagitRepositoryType>) unmarshaller.unmarshal(ClassLoader.getSystemResourceAsStream(i_Location));
+//            magitRepository = unmarshalledObject.getValue();
+            System.out.println("Sda");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
+
 
     public String[] getLocation() {
         String[] RepositoryLocation = {magitRepository.getLocation(), magitRepository.getName()};

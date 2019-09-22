@@ -3,8 +3,16 @@ import Logic.Logic;
 import Logic.Objects.BranchData;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import Logic.OpenAndConflict;
@@ -14,8 +22,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import  Logic.XmlException;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import static Logic.ConstantsEnums.*;
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Node;
 
 public class Controller {
 
@@ -85,7 +95,7 @@ public class Controller {
         Thread thread = new Thread(task);
         thread.start();*/
         try {
-            m_LogicManager.readXML("XML/ex2-small.xml");
+            m_LogicManager.readXML("C:\\Users\\OL\\Desktop\\Java Course\\ex1-large.xml");
         } catch (XmlException e) {
             e.printStackTrace();
         }
@@ -224,6 +234,25 @@ public class Controller {
         listviewConflict.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
+                try {
+                    FXMLLoader loader = new FXMLLoader();
+                    loader.setLocation(getClass().getResource("conflicView1.fxml"));
+                    Parent tableViewParent = (Parent)loader.load();
+                    Stage stage = new Stage();
+                    stage.setScene(new Scene(tableViewParent));
+                    ControllerConflict1 controller = loader.getController();
+                    controller.initData((Conflict)listviewConflict.getSelectionModel().getSelectedItem(),m_LogicManager.getM_ActiveRepository()+File.separator + m_LogicManager.getRootFolderName(),listviewConflict,listviewConflict.getSelectionModel().getSelectedIndex());
+                    stage.showAndWait();
+                    if(listviewConflict.getItems().size()==0)
+                    {
+                        System.out.println("NO MORE ITEMS");
+                        createCommit(actionEvent);
+
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
             }
         });

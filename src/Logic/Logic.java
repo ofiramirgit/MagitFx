@@ -36,6 +36,9 @@ public class Logic {
         m_CurrentCommitStateMap = new HashMap<>();
     }
 
+    public String getM_ActiveRepository() {
+        return m_ActiveRepository;
+    }
     //-------------------------------------------REPOSITORY  START----------------------------------
 
     //-------initRepository-------Start------
@@ -524,7 +527,7 @@ public class Logic {
 
     //-------------------------------------------GENERAL  START-------------------------------------
     //-------Files&Folders---------Start----------
-    private String getRootFolderName() {
+    public String getRootFolderName() {
         Path RootFolderName = Paths.get(getPathFolder(".magit") + File.separator + "RootFolderName.txt");
         if (Files.exists(RootFolderName))
             return getContentOfFile(new File(getPathFolder(".magit") + File.separator + "RootFolderName.txt"));
@@ -540,7 +543,7 @@ public class Logic {
         } else
             file.delete();//todo delete return value
     }
-    private String getContentOfFile(File i_File) {
+    public String getContentOfFile(File i_File) {
         String fileContent = EmptyString;
         Path path = Paths.get(i_File.getAbsolutePath());
 
