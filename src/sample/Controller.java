@@ -24,6 +24,8 @@ import java.util.Optional;
 import  Logic.XmlException;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import node.CommitNode;
+
 import static Logic.ConstantsEnums.*;
 import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Node;
 
@@ -138,6 +140,10 @@ public class Controller {
             m_LogicManager.createCommit(result.get());
         }
     }
+    public void showCommitList(javafx.event.ActionEvent actionEvent){
+        List<CommitNode> commitNodeList = m_LogicManager.getCommitList();
+    }
+
     //-------------Files & Commits - End--------------------------
 
     //-------------Branches - Start--------------------------
@@ -214,6 +220,7 @@ public class Controller {
         //todo no open changes
         OpenAndConflict openAndConflict = m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(),result.get());
         String s="";
+         listviewConflict.setVisible(true);
 //        ListView<Conflict> listViewConflict = new ListView<>();
         for(Conflict c: openAndConflict.getConflictList()){
             listviewConflict.getItems().add(c);
@@ -245,6 +252,7 @@ public class Controller {
                     stage.showAndWait();
                     if(listviewConflict.getItems().size()==0)
                     {
+                        listviewConflict.setVisible(false);
                         System.out.println("NO MORE ITEMS");
                         createCommit(actionEvent);
 
