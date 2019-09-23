@@ -97,7 +97,7 @@ public class Controller {
         Thread thread = new Thread(task);
         thread.start();*/
         try {
-            m_LogicManager.readXML("C:\\Users\\OL\\Desktop\\Java Course\\ex1-large.xml");
+            m_LogicManager.readXML("XML/ex2-small.xml");
         } catch (XmlException e) {
             e.printStackTrace();
         }

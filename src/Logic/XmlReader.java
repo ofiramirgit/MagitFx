@@ -57,22 +57,15 @@ public class XmlReader {
         magitRepository = unmarshalledObject.getValue();
     }
 
+
+
     public String[] getLocation() {
         String[] RepositoryLocation = {magitRepository.getLocation(), magitRepository.getName()};
         m_Location = RepositoryLocation[0] + File.separator + RepositoryLocation[1];
         return RepositoryLocation;
     }
-
-
     public void buildFromXML() throws XmlException {
-        BuildRepositoryObjects() ;
-    }
-
-    public String getActiveBranch(){
-        return magitRepository.getMagitBranches().getHead();
-    }
-    public void BuildRepositoryObjects() throws XmlException {
-      //  checkIfActiveBranchExist(getActiveBranch());
+        //  checkIfActiveBranchExist(getActiveBranch());
         Path ActiveBranchFilePath = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + "HEAD.txt");
         Path BranchesNamesFilePath = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + "NAMES.txt");
         try {
@@ -80,15 +73,17 @@ public class XmlReader {
             Files.write(ActiveBranchFilePath, getActiveBranch().getBytes());
             for (MagitSingleBranchType branch : magitRepository.getMagitBranches().getMagitSingleBranch()) {
                 Files.write(BranchesNamesFilePath, (branch.getName() + System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
-          //      checkIfCommitExist(branch.getPointedCommit().getId());
-                String CommitSha1 = buildCommit(magitRepository.getMagitCommits().getMagitSingleCommit().get(Integer.parseInt(branch.getPointedCommit().getId()) - 1));
+                //      checkIfCommitExist(branch.getPointedCommit().getId());
+                String CommitSha1 = buildCommit(magitRepository.getMagitCommits().getMagitSingleCommit().get(Integer.parseInt(branch.getPointedCommit().getId())-1));
                 updateBranchCommit(CommitSha1, branch.getName());
-
             }
         }
         catch (IOException e) {
             e.printStackTrace();
-        }
+        }    }
+
+    public String getActiveBranch(){
+        return magitRepository.getMagitBranches().getHead();
     }
     private void updateBranchCommit(String i_CommitSha1,String i_BranchName) {
         Path BranchPath = Paths.get(m_Location + File.separator + ".magit" + File.separator + "branches" + File.separator + i_BranchName + ".txt");
@@ -119,7 +114,7 @@ public class XmlReader {
         rootBlobData = buildRootFolder(commitXmlObject.getRootFolder().getId(), ConstantsEnums.FileType.FOLDER);
         commitObject.setM_MainSHA1(rootBlobData.getM_Sha1());
         commitObject.setM_PreviousSHA1(PreCommitSha1);
-        m_ZipFile.zipFile(m_Location + File.separator + ".magit"+File.separator+"objects",DigestUtils.sha1Hex(commitObject.toString()),commitObject.toString());
+//        m_ZipFile.zipFile(m_Location + File.separator + ".magit"+File.separator+"objects",DigestUtils.sha1Hex(commitObject.toString()),commitObject.toString());
         return DigestUtils.sha1Hex(commitObject.toString());
     }
     private BlobData buildRootFolder(String id, ConstantsEnums.FileType fileType) throws XmlException {
@@ -141,12 +136,12 @@ public class XmlReader {
             BlobData directoryBlob =
                     new BlobData(MagitFolder.getName(), sha1, ConstantsEnums.FileType.FOLDER,
                             MagitFolder.getLastUpdater(), MagitFolder.getLastUpdateDate());
-            m_ZipFile.zipFile(m_Location + File.separator + ".magit" + File.separator + "objects", sha1, folder.printArray());
+   //         m_ZipFile.zipFile(m_Location + File.separator + ".magit" + File.separator + "objects", sha1, folder.printArray());
             return directoryBlob;
         } else {
             MagitBlobType blob = getBlobXmlObject(id);
             BlobData blobData = new BlobData(blob.getName(), DigestUtils.sha1Hex(blob.getContent()), ConstantsEnums.FileType.FILE, blob.getLastUpdater(), blob.getLastUpdateDate());
-            m_ZipFile.zipFile(m_Location + File.separator + ".magit" + File.separator + "objects", DigestUtils.sha1Hex(blob.getContent()), blob.getContent());
+      //      m_ZipFile.zipFile(m_Location + File.separator + ".magit" + File.separator + "objects", DigestUtils.sha1Hex(blob.getContent()), blob.getContent());
             return blobData;
         }
     }
