@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.text.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+   <top>
+      <MenuBar BorderPane.alignment="CENTER">
+        <menus>
+          <Menu mnemonicParsing="false" text="Repository">
+            <items>
+                  <MenuItem mnemonicParsing="false" onAction="#setUserName" text="Set User Name" />
+              <MenuItem mnemonicParsing="false" onAction="#readXML" text="Load from XML" />
+                  <MenuItem mnemonicParsing="false" onAction="#initRepository" text="Create New" />
+                  <MenuItem mnemonicParsing="false" onAction="#switchRepository" text="Switch Repository" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="File &amp; Commits">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Show Open Changes" />
+                  <MenuItem mnemonicParsing="false" onAction="#createCommit" text="Create Commit" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Branches">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#showBranchList" text="Show All" />
+                  <MenuItem mnemonicParsing="false" onAction="#createNewBranch" text="Create New" />
+                  <MenuItem mnemonicParsing="false" onAction="#deleteExistBranch" text="Delete Exist Branch" />
+                  <MenuItem mnemonicParsing="false" onAction="#CheckOutHeadBranch" text="Switch Head Branch" />
+                  <MenuItem mnemonicParsing="false" text="Reset Branch" />
+                  <MenuItem mnemonicParsing="false" onAction="#mergeBranches" text="Merge" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   <bottom>
+      <AnchorPane prefHeight="27.0" prefWidth="600.0" style="-fx-background-color: black;" BorderPane.alignment="CENTER" />
+   </bottom>
+   <center>
+      <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+         <top>
+            <GridPane maxHeight="-Infinity" minHeight="-Infinity" prefHeight="50.0" prefWidth="600.0" BorderPane.alignment="CENTER">
+              <columnConstraints>
+                <ColumnConstraints fillWidth="false" hgrow="NEVER" maxWidth="170.0" minWidth="15.0" prefWidth="180.0" />
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="503.0" minWidth="10.0" percentWidth="75.0" prefWidth="473.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" percentHeight="50.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" percentHeight="50.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Label text="User Name" GridPane.hgrow="NEVER" GridPane.vgrow="NEVER">
+                     <GridPane.margin>
+                        <Insets left="10.0" />
+                     </GridPane.margin>
+                  </Label>
+                  <TextField fx:id="txtField_userName" alignment="TOP_LEFT" disable="true" prefHeight="20.0" prefWidth="430.0" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.hgrow="ALWAYS" GridPane.vgrow="NEVER">
+                     <GridPane.margin>
+                        <Insets left="10.0" right="10.0" />
+                     </GridPane.margin>
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </TextField>
+                  <TextField fx:id="txtField_repositoryPath" alignment="TOP_LEFT" disable="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1" GridPane.vgrow="NEVER">
+                     <GridPane.margin>
+                        <Insets left="10.0" right="10.0" top="10.0" />
+                     </GridPane.margin>
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </TextField>
+                  <Label text="Repository Location" GridPane.hgrow="NEVER" GridPane.rowIndex="1" GridPane.vgrow="NEVER">
+                     <GridPane.margin>
+                        <Insets left="10.0" top="10.0" />
+                     </GridPane.margin>
+                  </Label>
+                  <BorderPane prefHeight="200.0" prefWidth="200.0" />
+               </children>
+               <BorderPane.margin>
+                  <Insets top="20.0" />
+               </BorderPane.margin>
+            </GridPane>
+         </top>
+         <right>
+            <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
+               <children>
+                  <Button mnemonicParsing="false" text="Solve Conflict">
+                     <font>
+                        <Font size="12.0" />
+                     </font></Button>
+               </children>
+               <BorderPane.margin>
+                  <Insets top="20.0" />
+               </BorderPane.margin>
+            </VBox>
+         </right>
+         <center>
+            <ScrollPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+               <content>
+                  <ListView fx:id="listviewConflict" prefHeight="263.0" prefWidth="498.0" />
+               </content>
+               <BorderPane.margin>
+                  <Insets right="10.0" top="10.0" />
+               </BorderPane.margin>
+            </ScrollPane>
+         </center>
+      </BorderPane>
+   </center>
+</BorderPane>

@@ -3,6 +3,7 @@ package Logic;
 import Logic.Objects.*;
 import Zip.ZipFile;
 import inputValidation.FilesValidation;
+import node.CommitNode;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.xml.bind.JAXBException;
@@ -664,6 +665,12 @@ public class Logic {
             ex.printStackTrace();
         }
         return branchActiveName;
+    }
+
+    public List<CommitNode> getCommitList() {
+        List<CommitNode> commitNodeList = null;
+
+        return commitNodeList;
     }
 
     //-------------------------------------------GENERAL  END-------------------------------------
