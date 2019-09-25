@@ -1,6 +1,14 @@
 package sample;
 import Logic.Logic;
 import Logic.Objects.BranchData;
+import com.fxgraph.edges.Edge;
+import com.fxgraph.graph.Graph;
+import com.fxgraph.graph.ICell;
+import com.fxgraph.graph.Model;
+import com.fxgraph.graph.PannableCanvas;
+import inputValidation.FilesValidation;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -9,21 +17,21 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import Logic.OpenAndConflict;
 import Logic.Conflict;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import  Logic.XmlException;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import layout.CommitTreeLayout;
 import node.CommitNode;
 
 import static Logic.ConstantsEnums.*;
@@ -31,7 +39,8 @@ import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.Node;
 
 public class Controller {
 
-    Logic m_LogicManager = new Logic();
+    private Logic m_LogicManager = new Logic();
+    private FilesValidation m_FilesValidation = new FilesValidation();
 
     @FXML
     public Button btn_loadXml;
@@ -63,45 +72,39 @@ public class Controller {
         final DirectoryChooser dc = new DirectoryChooser();
         File selectedFolder = dc.showDialog(null);
         if (selectedFolder != null) {
-            TextInputDialog dialog = TextDialogCreator("Input Repository Name","Insert Repository Name","Please enter repository name: ");
+            TextInputDialog dialog = TextDialogCreator("Input Repository Name", "Insert Repository Name", "Please enter repository name: ");
             Optional<String> result = dialog.showAndWait();
             if (result.isPresent()) {
                 if (m_LogicManager.initRepository(selectedFolder.getAbsolutePath(), result.get())) {
                     txtField_repositoryPath.setText(selectedFolder.getAbsolutePath() + File.separator + result.get());
                     unDisableRepositorySection();
                 } else {
-                    Alert alert = alertCreator(Alert.AlertType.WARNING,"Warning","Repository Alreadt Exist!","repository alerady exists.");
+                    Alert alert = alertCreator(Alert.AlertType.WARNING, "Warning", "Repository Alreadt Exist!", "repository alerady exists.");
                     alert.showAndWait();
                 }
             }
         }
     }
+
     //Load Repository XML
-    public void readXML(javafx.event.ActionEvent actionEvent) { //need to add check
-       /* Boolean exist=false;
+    public void readXML(javafx.event.ActionEvent actionEvent) {
+
         final FileChooser dc = new FileChooser();
         File selectedXML = dc.showOpenDialog(null);
 
-        Runnable task = () -> {
-            try {
-                if (selectedXML != null) {
-                    m_LogicManager.readXML(selectedXML.getAbsolutePath());
-                    txtField_repositoryPath.setText(selectedXML.getAbsolutePath());
-                    unDisableRepositorySection();
-                }
-            } catch (XmlException e) {
-                System.out.println("Repository Already Exist!");
-            }
-        };
-
-        Thread thread = new Thread(task);
-        thread.start();*/
         try {
-            m_LogicManager.readXML("C:\\Users\\OL\\Desktop\\Java Course\\ex1-large.xml");
+            if (selectedXML != null) {
+                m_LogicManager.readXML(selectedXML.getAbsolutePath());
+                txtField_repositoryPath.setText(selectedXML.getAbsolutePath());
+                            unDisableRepositorySection();
+            }
         } catch (XmlException e) {
-            e.printStackTrace();
+            Alert alert = alertCreator(Alert.AlertType.WARNING,"XML loading aborted",e.getMessage(),"");
+            alert.showAndWait();
         }
+
     }
+
     //Switch Repository
     public void switchRepository(javafx.event.ActionEvent actionEvent) throws IOException {
         final DirectoryChooser dc = new DirectoryChooser();
@@ -111,21 +114,22 @@ public class Controller {
                 txtField_repositoryPath.setText(selectedFolder.getAbsolutePath());
                 txtField_userName.setText("Administrator");
             } else {
-                Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Repository Not Exist","the folder you selected isn't repository");
+                Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Repository Not Exist", "the folder you selected isn't repository");
                 alert.showAndWait();
             }
         }
     }
+
     //Set User Name
     public void setUserName(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = TextDialogCreator("Input User Name","Insert User Name","Please enter user name: ");
+        TextInputDialog dialog = TextDialogCreator("Input User Name", "Insert User Name", "Please enter user name: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             if (m_LogicManager.setM_ActiveUser(result.get())) {
                 txtField_userName.setText(result.get());
                 System.out.println("User Name: " + result.get());
             } else {
-                Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","UnValid User Name Input","user name input is unvalid. 1-50 characters");
+                Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "UnValid User Name Input", "user name input is unvalid. 1-50 characters");
                 alert.showAndWait();
             }
         }
@@ -134,20 +138,46 @@ public class Controller {
 
     //-------------Files & Commits - Start--------------------------
     public void createCommit(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = TextDialogCreator("Commit Message","Insert Commit Message","Please enter Commit Message: ");
+        TextInputDialog dialog = TextDialogCreator("Commit Message", "Insert Commit Message", "Please enter Commit Message: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             m_LogicManager.createCommit(result.get());
         }
     }
-    public void showCommitList(javafx.event.ActionEvent actionEvent){
+
+    public void showCommitList(javafx.event.ActionEvent actionEvent) throws IOException {
         List<CommitNode> commitNodeList = m_LogicManager.getCommitList();
+        Graph tree = new Graph();
+        createCommits(tree, commitNodeList);
+
+        Stage primaryStage = new Stage();
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        GridPane root = fxmlLoader.load(getClass().getResource("main.fxml"));
+
+        final Scene scene = new Scene(root, 700, 400);
+
+        ScrollPane scrollPane = (ScrollPane) scene.lookup("#scrollpaneContainer");
+        PannableCanvas canvas = tree.getCanvas();
+        //canvas.setPrefWidth(100);
+        //canvas.setPrefHeight(100);
+        scrollPane.setContent(canvas);
+
+        Button button = (Button) scene.lookup("#pannableButton");
+
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        Platform.runLater(() -> {
+            tree.getUseViewportGestures().set(false);
+            tree.getUseNodeGestures().set(false);
+        });
+
     }
 
     //-------------Files & Commits - End--------------------------
 
     //-------------Branches - Start--------------------------
-   //Show All Branches
+    //Show All Branches
     public void showBranchList(javafx.event.ActionEvent actionEvent) {
         List<BranchData> BranchesList = m_LogicManager.GetAllBranchesDetails();
         String stringToShow = "";
@@ -155,16 +185,17 @@ public class Controller {
             stringToShow += branch.toString();
         textArea.setText(stringToShow);
     }
+
     //Create New Branch
     public void createNewBranch(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
+        TextInputDialog dialog = TextDialogCreator("Create New Branch", "Insert Branch Name", "Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
             if (!m_LogicManager.createNewBranch(result.get())) {
-                Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Error! Branch Name Exist!","Error! Branch Name Exist!");
+                Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Error! Branch Name Exist!", "Error! Branch Name Exist!");
                 alert.showAndWait();
             } else {
-                Alert alert = alertCreator(Alert.AlertType.CONFIRMATION,"Information","Branch created successfully.","Do you want to check out active branch and load this branch?");
+                Alert alert = alertCreator(Alert.AlertType.CONFIRMATION, "Information", "Branch created successfully.", "Do you want to check out active branch and load this branch?");
 
                 ButtonType buttonYes = new ButtonType("Yes");
                 ButtonType buttonNo = new ButtonType("No");
@@ -177,11 +208,11 @@ public class Controller {
                 if (resultYesNo.get() == buttonYes) {
                     if (m_LogicManager.WcNotChanged()) {
                         m_LogicManager.CheckOutHeadBranch(result.get(), false, EmptyString);
-                        Alert success = alertCreator(Alert.AlertType.INFORMATION,"Head branch checked out successfully.","Head branch checked out successfully.","Head branch checked out successfully.");
+                        Alert success = alertCreator(Alert.AlertType.INFORMATION, "Head branch checked out successfully.", "Head branch checked out successfully.", "Head branch checked out successfully.");
                         success.showAndWait();
                     } else if (resultYesNo.get() == buttonNo) {
                         System.out.println("There is open changes. check out branch failed.");
-                        Alert warning = alertCreator(Alert.AlertType.WARNING,"Check Out Branch Faild","There is open changes. check out branch failed.","There is open changes. check out branch failed.");
+                        Alert warning = alertCreator(Alert.AlertType.WARNING, "Check Out Branch Faild", "There is open changes. check out branch failed.", "There is open changes. check out branch failed.");
                         warning.showAndWait();
                     } else {
                         // ... user chose CANCEL or closed the dialog
@@ -190,39 +221,40 @@ public class Controller {
             }
         }
     }
+
     //Delete Exist Branch
-    public void deleteExistBranch(javafx.event.ActionEvent actionEvent){
-        TextInputDialog dialog = TextDialogCreator("Create New Branch","Insert Branch Name","Please enter branch name: ");
+    public void deleteExistBranch(javafx.event.ActionEvent actionEvent) {
+        TextInputDialog dialog = TextDialogCreator("Create New Branch", "Insert Branch Name", "Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
-        if(!m_LogicManager.deleteBranch(result.get()))
-        {
-            Alert alert = alertCreator(Alert.AlertType.ERROR,"Error","Branch is Active!","the branch you selected is Active");
+        if (!m_LogicManager.deleteBranch(result.get())) {
+            Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Branch is Active!", "the branch you selected is Active");
             alert.showAndWait();
-        }
-        else {
-            Alert success = alertCreator(Alert.AlertType.INFORMATION,"Branch deleted successfully.","Branch deleted successfully.","Branch deleted successfully.");
+        } else {
+            Alert success = alertCreator(Alert.AlertType.INFORMATION, "Branch deleted successfully.", "Branch deleted successfully.", "Branch deleted successfully.");
             success.showAndWait();
         }
     }
+
     //Replace Head Branch
-    public void CheckOutHeadBranch(javafx.event.ActionEvent actionEvent){
-        TextInputDialog dialog = TextDialogCreator("change head Branch","Insert Branch Name","Please enter branch name: ");
+    public void CheckOutHeadBranch(javafx.event.ActionEvent actionEvent) {
+        TextInputDialog dialog = TextDialogCreator("change head Branch", "Insert Branch Name", "Please enter branch name: ");
         Optional<String> result = dialog.showAndWait();
         if (result.isPresent()) {
-            m_LogicManager.CheckOutHeadBranch(result.get(),false,"");
+            m_LogicManager.CheckOutHeadBranch(result.get(), false, "");
         }
     }
+
     //Merge
     public void mergeBranches(javafx.event.ActionEvent actionEvent) {
-        TextInputDialog dialog = TextDialogCreator("Input Branch Name","Insert Branch Name","Please enter repository name: ");
+        TextInputDialog dialog = TextDialogCreator("Input Branch Name", "Insert Branch Name", "Please enter repository name: ");
         Optional<String> result = dialog.showAndWait();
         //todo validation input
         //todo no open changes
-        OpenAndConflict openAndConflict = m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(),result.get());
-        String s="";
-         listviewConflict.setVisible(true);
+        OpenAndConflict openAndConflict = m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(), result.get());
+        String s = "";
+        listviewConflict.setVisible(true);
 //        ListView<Conflict> listViewConflict = new ListView<>();
-        for(Conflict c: openAndConflict.getConflictList()){
+        for (Conflict c : openAndConflict.getConflictList()) {
             listviewConflict.getItems().add(c);
         }
         listviewConflict.setCellFactory(param -> new ListCell<Conflict>() {
@@ -244,14 +276,13 @@ public class Controller {
                 try {
                     FXMLLoader loader = new FXMLLoader();
                     loader.setLocation(getClass().getResource("conflicView1.fxml"));
-                    Parent tableViewParent = (Parent)loader.load();
+                    Parent tableViewParent = (Parent) loader.load();
                     Stage stage = new Stage();
                     stage.setScene(new Scene(tableViewParent));
                     ControllerConflict1 controller = loader.getController();
-                    controller.initData((Conflict)listviewConflict.getSelectionModel().getSelectedItem(),m_LogicManager.getM_ActiveRepository()+File.separator + m_LogicManager.getRootFolderName(),listviewConflict,listviewConflict.getSelectionModel().getSelectedIndex());
+                    controller.initData((Conflict) listviewConflict.getSelectionModel().getSelectedItem(), m_LogicManager.getM_ActiveRepository() + File.separator + m_LogicManager.getRootFolderName(), listviewConflict, listviewConflict.getSelectionModel().getSelectedIndex());
                     stage.showAndWait();
-                    if(listviewConflict.getItems().size()==0)
-                    {
+                    if (listviewConflict.getItems().size() == 0) {
                         listviewConflict.setVisible(false);
                         System.out.println("NO MORE ITEMS");
                         createCommit(actionEvent);
@@ -266,6 +297,40 @@ public class Controller {
         });
     }
     //-------------Branches - End--------------------------
+
+    //-------------Collaboration - Start--------------------------
+    public void Clone(javafx.event.ActionEvent actionEvent) throws Exception {
+        File selectedDestination = null;
+        final DirectoryChooser dc = new DirectoryChooser();
+        TextInputDialog td = new TextInputDialog("");
+
+        dc.setTitle("Select Repository to Clone");
+        File selectedRepo = dc.showDialog(null);
+
+
+        if (selectedRepo != null) {
+            if(m_FilesValidation.isRepository(selectedRepo.getAbsolutePath())){
+                dc.setTitle("Select Destination Folder to clone into");
+                selectedDestination = dc.showDialog(null);
+                if(selectedDestination!=null){
+                    td.setTitle("");
+                    td.setHeaderText("Enter Repository Name");
+                    Optional<String> result = td.showAndWait();
+                    m_LogicManager.Clone(selectedRepo.getAbsolutePath(),selectedDestination.getAbsolutePath(),result.get());
+                }
+            }
+            else{
+                Alert alert = alertCreator(Alert.AlertType.WARNING,"Selected file is not a Repository.","Please select a repository","");
+                alert.showAndWait();
+            }
+        }
+        else {
+            Alert alert = alertCreator(Alert.AlertType.WARNING,"Problem with the selected file..","Please select new file","");
+            alert.showAndWait();
+        }
+    }
+
+    //-------------Collaboration - End--------------------------
 
     //-------------General - Start--------------------------
 
@@ -292,8 +357,51 @@ public class Controller {
         dialog.setContentText(i_Content);
         return dialog;
     }
-    //-------------General - End--------------------------
 
+    //-------------General - End--------------------------
+    public void createCommits(Graph graph, List<CommitNode> commitNodeList) {
+        final Model model = graph.getModel();
+        graph.beginUpdate();
+
+//        List <ICell> icells = new ArrayList<>();
+        for (CommitNode commitNode : commitNodeList) {
+            model.addCell(commitNode);
+        }
+        for(int i=commitNodeList.size()-1;i>=0;i--)
+        {
+            findRainbow(model,commitNodeList,i);
+        }
+//        for (CommitNode commitNode : commitNodeList) {
+//            commitNode.setAlreadyAdded(true);
+//            for (CommitNode commitNode2 : commitNodeList) {
+//                if (!commitNode2.getAlreadyAdded()) {
+//                    if (commitNode2.getBranch_number() == commitNode.getBranch_number())//same branch
+//                        model.addEdge(commitNode, commitNode2);
+//                    else if (commitNode.getBranch_number() == commitNode2.getPrevBranch())//new branch
+//                        model.addEdge(commitNode, commitNode2);
+//                }
+//            }
+//        }
+        graph.endUpdate();
+        graph.layout(new CommitTreeLayout());
+
+    }
+
+    private void findRainbow(Model model, List<CommitNode> commitNodeList, int size) {
+        for(int i=size-1;i>=0;i--)
+        {
+            if(commitNodeList.get(i).getBranch_number()==commitNodeList.get(size).getBranch_number())
+            {
+                model.addEdge(commitNodeList.get(i), commitNodeList.get(size));
+                return;
+            }
+            else if(commitNodeList.get(size).getPrevBranch()==commitNodeList.get(i).getBranch_number())
+            {
+                model.addEdge(commitNodeList.get(i), commitNodeList.get(size));
+                return;
+            }
+        }
+    }
 }
 
 

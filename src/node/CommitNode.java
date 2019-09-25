@@ -17,19 +17,54 @@ public class CommitNode extends AbstractCell {
     private String timestamp;
     private String committer;
     private String message;
+    private Integer branch_number;
+    private Integer prevBranch;
+    private String Sha1;
+    private Boolean alreadyAdded=false;
     private CommitNodeController commitNodeController;
 
-    public CommitNode(String timestamp, String committer, String message) {
+    public CommitNode(String timestamp, String committer, String message,Integer branch_number,Integer prevBranch,String Sha1) {
         this.timestamp = timestamp;
         this.committer = committer;
         this.message = message;
+        this.branch_number = branch_number;
+        this.prevBranch = prevBranch;
+        this.Sha1 = Sha1;
+    }
+
+
+    public void setAlreadyAdded(Boolean alreadyAdded) {
+        this.alreadyAdded = alreadyAdded;
+    }
+
+    public Boolean getAlreadyAdded() {
+        return alreadyAdded;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
+
+    public String getSha1() {
+        return Sha1;
+    }
+
+    public Integer getBranch_number() {
+        return branch_number;
+    }
+
+    public Integer getPrevBranch() {
+        return prevBranch;
+    }
+
+    public void setPrevBranch(Integer prevBranch) {
+        this.prevBranch = prevBranch;
     }
 
     @Override
     public Region getGraphic(Graph graph) {
 
         try {
-
             FXMLLoader fxmlLoader = new FXMLLoader();
             URL url = getClass().getResource("commitNode.fxml");
             fxmlLoader.setLocation(url);

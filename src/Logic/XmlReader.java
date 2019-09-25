@@ -5,6 +5,7 @@ import Logic.Objects.BlobData;
 import Logic.Objects.Commit;
 import Logic.Objects.Folder;
 import Zip.ZipFile;
+import inputValidation.FilesValidation;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import javax.xml.bind.JAXBContext;
@@ -26,48 +27,33 @@ public class XmlReader {
     private MagitRepositoryType magitRepository;
     private ZipFile m_ZipFile;
     private String m_Location;
-    private static final String JAXB_XML_GAME_PACKAGE_NAME = "GeneratedXML";
+    FilesValidation m_FilesValidation;
 
-    public XmlReader() throws XmlException {
-        /*try {
-            Path XmlFilePath = Paths.get(i_XMLLocation);
-            if(i_XMLLocation.length()<4||!i_XMLLocation.substring(i_XMLLocation.length() - 4).equals(".xml"))
+    public XmlReader() {
+        magitRepository = new MagitRepositoryType();
+        m_ZipFile = new ZipFile();
+        m_FilesValidation = new FilesValidation();
+    }
+
+    public void ReadXml(String i_Location) throws JAXBException,XmlException {
+        InputStream inputStream =null;
+        try {
+            Path XmlFilePath = Paths.get(i_Location);
+            if(i_Location.length()<4||!i_Location.substring(i_Location.length() - 4).equals(".xml"))
                 throw new XmlException("File is not xml format");
             if(!Files.exists(XmlFilePath))
                 throw new XmlException("Xml file not found");
-            InputStream inputStream = new FileInputStream(i_XMLLocation);
-            try {
-                magitRepository = deserializeFrom(inputStream);
-
-                m_ZipFile = new Zip.ZipFile();
-                xmlFileIsValid_oneId32();
-            } catch (JAXBException e) {
-                e.printStackTrace();
-            }
-
+            inputStream = new FileInputStream(i_Location);
         }catch(FileNotFoundException e) {
             e.printStackTrace();
-        }*/
-        magitRepository = new MagitRepositoryType();
-    }
-
-    public void ReadXml(String i_Location) throws JAXBException {
-        try {
-            InputStream inputStream = new FileInputStream(i_Location);
-
-
-//        JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
-            JAXBContext jc = JAXBContext.newInstance(JAXB_XML_GAME_PACKAGE_NAME);
-//        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            Unmarshaller u = jc.createUnmarshaller();
-            magitRepository= (MagitRepositoryType) u.unmarshal(inputStream);
-//            JAXBElement<MagitRepositoryType> unmarshalledObject = (JAXBElement<MagitRepositoryType>) unmarshaller.unmarshal(ClassLoader.getSystemResourceAsStream(i_Location));
-//            magitRepository = unmarshalledObject.getValue();
-            System.out.println("Sda");
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         }
+
+        JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+        Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+        JAXBElement<MagitRepositoryType> unmarshalledObject = (JAXBElement<MagitRepositoryType>) unmarshaller.unmarshal(inputStream);
+        magitRepository = unmarshalledObject.getValue();
     }
+
 
 
     public String[] getLocation() {
@@ -76,16 +62,10 @@ public class XmlReader {
         return RepositoryLocation;
     }
 
-
     public void buildFromXML() throws XmlException {
-        BuildRepositoryObjects() ;
-    }
-
-    public String getActiveBranch(){
-        return magitRepository.getMagitBranches().getHead();
-    }
-    public void BuildRepositoryObjects() throws XmlException {
-      //  checkIfActiveBranchExist(getActiveBranch());
+        checkIfActiveBranchExist(getActiveBranch());
+        checkIfMagitRemoteReferenceExist(magitRepository.getMagitRemoteReference());
+        //    checkIfRemoteTrackingExist(magitRepository);
         Path ActiveBranchFilePath = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + "HEAD.txt");
         Path BranchesNamesFilePath = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + "NAMES.txt");
         try {
@@ -93,15 +73,19 @@ public class XmlReader {
             Files.write(ActiveBranchFilePath, getActiveBranch().getBytes());
             for (MagitSingleBranchType branch : magitRepository.getMagitBranches().getMagitSingleBranch()) {
                 Files.write(BranchesNamesFilePath, (branch.getName() + System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
-          //      checkIfCommitExist(branch.getPointedCommit().getId());
-                String CommitSha1 = buildCommit(magitRepository.getMagitCommits().getMagitSingleCommit().get(Integer.parseInt(branch.getPointedCommit().getId()) - 1));
+                checkIfCommitExist(branch.getPointedCommit().getId());
+                String CommitSha1 = buildCommit(magitRepository.getMagitCommits().getMagitSingleCommit().get(Integer.parseInt(branch.getPointedCommit().getId())-1));
                 updateBranchCommit(CommitSha1, branch.getName());
-
             }
         }
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public String getActiveBranch(){
+        return magitRepository.getMagitBranches().getHead();
     }
     private void updateBranchCommit(String i_CommitSha1,String i_BranchName) {
         Path BranchPath = Paths.get(m_Location + File.separator + ".magit" + File.separator + "branches" + File.separator + i_BranchName + ".txt");
@@ -118,7 +102,7 @@ public class XmlReader {
     private String buildCommit(MagitSingleCommitType commitXmlObject) throws XmlException {
         String PreCommitSha1 = "NONE";
         if(commitXmlObject.getPrecedingCommits()!=null && commitXmlObject.getPrecedingCommits().getPrecedingCommit()!=null) {
-       //     checkIfCommitExist(commitXmlObject.getPrecedingCommits().getPrecedingCommit().getId());
+            checkIfCommitExist(commitXmlObject.getPrecedingCommits().getPrecedingCommit().getId());
             MagitSingleCommitType commit = getCommitXmlObject(commitXmlObject.getPrecedingCommits().getPrecedingCommit().getId());
             PreCommitSha1 = buildCommit(commit);
         }
@@ -127,8 +111,8 @@ public class XmlReader {
         commitObject.setM_CreatedBy(commitXmlObject.getAuthor());
         commitObject.setM_CreatedTime(commitXmlObject.getDateOfCreation());
         commitObject.setM_Message(commitXmlObject.getMessage());
-     //   checkIfFolderIdExist(commitXmlObject.getRootFolder().getId());
-      //  checkIfFolderIsRootFolder(commitXmlObject.getRootFolder().getId());
+        checkIfFolderIdExist(commitXmlObject.getRootFolder().getId());
+        checkIfFolderIsRootFolder(commitXmlObject.getRootFolder().getId());
         rootBlobData = buildRootFolder(commitXmlObject.getRootFolder().getId(), ConstantsEnums.FileType.FOLDER);
         commitObject.setM_MainSHA1(rootBlobData.getM_Sha1());
         commitObject.setM_PreviousSHA1(PreCommitSha1);
@@ -142,11 +126,11 @@ public class XmlReader {
             MagitSingleFolderType MagitFolder =  getFolderXmlObject(id);
             for (ItemType itemFolder : MagitFolder.getItems().getItem()) {
                 if (itemFolder.getType().equals("blob")) {
-         //           checkIfBlobIdExist(itemFolder.getId());
+                    checkIfBlobIdExist(itemFolder.getId());
                     folder.AddNewItem(buildRootFolder(itemFolder.getId(), ConstantsEnums.FileType.FILE));
                 } else {
-          //          checkIfFolderIdExist(itemFolder.getId());
-         //           checkIfFolderPointToHimself(itemFolder.getId(), id);
+                    checkIfFolderIdExist(itemFolder.getId());
+                    checkIfFolderPointToHimself(itemFolder.getId(), id);
                     folder.AddNewItem(buildRootFolder(itemFolder.getId(), ConstantsEnums.FileType.FOLDER));
                 }
             }
@@ -192,8 +176,8 @@ public class XmlReader {
     }
 
     //Xml Validation 3.2
-   /* private void xmlFileIsValid_oneId32() throws XmlException {
-        List<Byte>idNumbers = new ArrayList<>();
+    private void xmlFileIsValid_oneId32() throws XmlException {
+        List<String>idNumbers = new ArrayList<>();
         for(MagitBlobType blob:magitRepository.getMagitBlobs().getMagitBlob())
         {
             if(idNumbers.contains(blob.getId())) {
@@ -221,7 +205,7 @@ public class XmlReader {
     }
 
     //Xml Validation 3.3
-    private void checkIfBlobIdExist(Byte id) throws XmlException {
+    private void checkIfBlobIdExist(String id) throws XmlException {
         Boolean Exist=false;
         for(MagitBlobType blob: magitRepository.getMagitBlobs().getMagitBlob())
         {
@@ -233,7 +217,7 @@ public class XmlReader {
     }
 
     //Xml Validation 3.4 & 3.6
-    private void checkIfFolderIdExist(Byte id) throws XmlException {
+    private void checkIfFolderIdExist(String id) throws XmlException {
         Boolean Exist=false;
         for(MagitSingleFolderType folder: magitRepository.getMagitFolders().getMagitSingleFolder())
         {
@@ -245,16 +229,16 @@ public class XmlReader {
     }
 
     //Xml Validation 3.5
-    private void checkIfFolderPointToHimself(Byte ToId, Byte FromId) throws XmlException {
+    private void checkIfFolderPointToHimself(String ToId, String FromId) throws XmlException {
         if(ToId.equals(FromId))
             throw new XmlException("Folder Point to Same Folder");
     }
 
     //Xml Validation 3.7
-    private void checkIfFolderIsRootFolder(Byte id) throws XmlException {
-        if(getFolderXmlObject(id).getIsRoot()==null)
+    private void checkIfFolderIsRootFolder(String id) throws XmlException {
+        if(getFolderXmlObject(id.toString()).getIsRoot()==null)
             throw new XmlException("Commit Pointing None Root Folder");
-        if(!getFolderXmlObject(id).getIsRoot().equals("true"))
+        if(!getFolderXmlObject(id.toString()).getIsRoot().equals("true"))
             throw new XmlException("Commit Pointing None Root Folder");
     }
 
@@ -280,7 +264,36 @@ public class XmlReader {
         }
         if(!Exist)
             throw new XmlException("Head Pointing UnExist Branch");
-    }*/
+    }
+
+    //Xml Validation Ex02 - A
+    private void checkIfMagitRemoteReferenceExist(MagitRemoteReferenceType magitRemoteReference) throws XmlException{
+        Boolean Exist=false;
+        if(!m_FilesValidation.isRepository(magitRemoteReference.getLocation() + File.separator + magitRemoteReference.getName()))
+            Exist = true;
+
+        if(!Exist)
+            throw new XmlException("Remote Reference is not Repository");
+    }
+
+    //Xml Validation Ex02 - B
+    private void checkIfRemoteTrackingExist(MagitRepositoryType magitRepository) throws XmlException{
+        Boolean Exist=false;
+
+        for(MagitSingleBranchType trackingBranch : magitRepository.getMagitBranches().getMagitSingleBranch()){
+            if(trackingBranch.getTracking().equals("true")){
+                if(magitRepository.getMagitBranches().getMagitSingleBranch().contains(trackingBranch.getTrackingAfter())){
+                    int index =  magitRepository.getMagitBranches().getMagitSingleBranch().indexOf(trackingBranch.getTrackingAfter());
+                    if(!magitRepository.getMagitBranches().getMagitSingleBranch().get(index).getIsRemote().equals("true")){
+                        Exist = true;
+                    }
+                }
+                else {Exist = true;}
+            }
+
+        }
+        if(!Exist)
+            throw new XmlException("Remote branch problem");
+    }
 
 }
-

@@ -5,14 +5,12 @@ import Zip.ZipFile;
 import inputValidation.FilesValidation;
 import node.CommitNode;
 import org.apache.commons.codec.digest.DigestUtils;
+//import sun.security.ec.ECDSASignature;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.text.ParseException;
 import java.util.*;
 
@@ -50,7 +48,8 @@ public class Logic {
             createRepository(selectedFolder, RepositoryName);
         return true;
     }
-//todo duplicate
+
+    //todo duplicate
     private void createRepository(String selectedFolder, String RepositoryName) {
         Path RepositoryPath = Paths.get(selectedFolder + File.separator + RepositoryName);
         Path RootFolderPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + RepositoryName);
@@ -169,6 +168,7 @@ public class Logic {
             updateBranchActiveCommit(commitSha1);
         }
     }
+
     private BlobData recursiveTravelFolders(String i_FolderToZipInto, File i_File, WorkingCopyStatus i_WCstatus) {
         String sha1;
         BlobData newBlobData;
@@ -215,13 +215,16 @@ public class Logic {
         }
         return newBlobData;
     }
+
     private Boolean isFileNeedCommit(String i_Path, WorkingCopyStatus i_WCstatus) {
         return i_WCstatus.getM_NewFilesList().contains(i_Path) || i_WCstatus.getM_ChangedFilesList().contains(i_Path);
     }
+
     private boolean isFirstCommit() {
         String BranchName = getBranchActiveName();
         return (getContentOfFile(new File(getPathFolder("branches") + File.separator + BranchName + ".txt")).equals(EmptyString));
     }
+
     private void updateBranchActiveCommit(String i_CommitSha1) {
         String activeBranchName = getBranchActiveName();
         Path activeBranchPath = Paths.get(getPathFolder("branches") + File.separator + activeBranchName + ".txt");
@@ -265,6 +268,7 @@ public class Logic {
 
         return wcStatus;
     }
+
     private void recursiveCompareWC(String stringPath, String fName, WorkingCopyStatus i_WcStatus) {
         File file = new File(stringPath + File.separator + fName);
 
@@ -400,7 +404,7 @@ public class Logic {
         spreadFolder(sharedFatherSha1, "Father");
         WorkingCopyStatus wcOurs = ShowWorkingCopyStatus(getPathFolder("merge") + File.separator + "FatherCommitStatus.txt");
 
-        spreadFolder(Sha1Theirs,"Theirs");
+        spreadFolder(Sha1Theirs, "Theirs");
         CheckOutHeadBranch(theirsBranch, false, "");
         WorkingCopyStatus wcTheirs = ShowWorkingCopyStatus(getPathFolder("merge") + File.separator + "FatherCommitStatus.txt");
 
@@ -410,8 +414,9 @@ public class Logic {
         ArrayList<Conflict> ConflictFiles = new ArrayList<>();
 
         fillConflictAndOpenChangesList(wcOurs, wcTheirs, OpenChanges, ConflictFiles);
-        return (new OpenAndConflict(ConflictFiles,OpenChanges));
+        return (new OpenAndConflict(ConflictFiles, OpenChanges));
     }
+
     private String findSharedFather(String oursBranch, String theirsBranch) {
         String Sha1Ours = getContentOfFile(new File(getPathFolder("branches"), oursBranch + ".txt"));
         String Sha1Theirs = getContentOfFile(new File(getPathFolder("branches"), theirsBranch + ".txt"));
@@ -440,8 +445,9 @@ public class Logic {
         }
         return Sha1Ours;
     }
+
     private void fillConflictAndOpenChangesList(WorkingCopyStatus wcOurs, WorkingCopyStatus wcTheirs,
-                                                ArrayList<OpenChange> openChanges, ArrayList<Conflict> conflictFiles){
+                                                ArrayList<OpenChange> openChanges, ArrayList<Conflict> conflictFiles) {
         List<String> newOurs = wcOurs.getM_NewFilesList();
         List<String> newTheirs = wcTheirs.getM_NewFilesList();
         List<String> updatedOurs = wcOurs.getM_ChangedFilesList();
@@ -460,9 +466,9 @@ public class Logic {
                     openChanges.add(new OpenChange(Paths.get(newFile), CREATED));
                 } else {//if created different files but same name
                     conflictFiles.add(new Conflict(
-                            new FileStruct(Paths.get(newFile),CREATED),
-                            new FileStruct(newPathFileTheirs,CREATED),
-                            new FileStruct(Paths.get(EmptyString),NONE)));
+                            new FileStruct(Paths.get(newFile), CREATED),
+                            new FileStruct(newPathFileTheirs, CREATED),
+                            new FileStruct(Paths.get(EmptyString), NONE)));
                 }
                 newTheirs.remove(newFile);
             } else {//if new file on ours and not created in theirs
@@ -483,9 +489,9 @@ public class Logic {
                     openChanges.add(new OpenChange(deletePathFileTheirs, DELETED));
                 } else {//file in theirs no the same in father
                     conflictFiles.add(new Conflict(
-                            new FileStruct(Paths.get(deleteFile),DELETED),
-                            new FileStruct(deletePathFileTheirs,UPDATED),
-                            new FileStruct(deletePathFileFather,NOTCHANGED)
+                            new FileStruct(Paths.get(deleteFile), DELETED),
+                            new FileStruct(deletePathFileTheirs, UPDATED),
+                            new FileStruct(deletePathFileFather, NOTCHANGED)
                     ));
                 }
             }
@@ -500,31 +506,74 @@ public class Logic {
                     openChanges.add(new OpenChange(Paths.get(updateFile), CREATED));
                 } else {//updated in both but different content
                     conflictFiles.add(new Conflict(
-                            new FileStruct(Paths.get(updateFile),UPDATED),
-                            new FileStruct(updatePathFileTheirs,UPDATED),
-                            new FileStruct(updatePathFileFather,NOTCHANGED)));
+                            new FileStruct(Paths.get(updateFile), UPDATED),
+                            new FileStruct(updatePathFileTheirs, UPDATED),
+                            new FileStruct(updatePathFileFather, NOTCHANGED)));
                 }
                 updatedTheirs.remove(updateFile);
-            }
-            else
-            {//file updated in ours and not in theirs
-                openChanges.add(new OpenChange(Paths.get(updateFile),UPDATED));
+            } else {//file updated in ours and not in theirs
+                openChanges.add(new OpenChange(Paths.get(updateFile), UPDATED));
             }
         }
-        for(String notChanged : NotChangedOurs) {//notChanged
+        for (String notChanged : NotChangedOurs) {//notChanged
             if (NotChangedTheirs.contains(notChanged)) {//file updated in ours and theirs
-                openChanges.add(new OpenChange(Paths.get(notChanged),NOTCHANGED));
+                openChanges.add(new OpenChange(Paths.get(notChanged), NOTCHANGED));
                 NotChangedTheirs.remove(notChanged);
             }
         }
         for (String newFile : newTheirs) {
             Path updatePathFileTheirs = Paths.get(newFile.replace(m_ActiveRepository + File.separator + getRootFolderName(), getPathFolder("merge") + File.separator + "Theirs"));
-            openChanges.add(new OpenChange(updatePathFileTheirs,CREATED));
+            openChanges.add(new OpenChange(updatePathFileTheirs, CREATED));
         }
     }
     //-------mergeBranches---------End----------
 
     //-------------------------------------------BRANCH  END-------------------------------------
+    //-------------------------------------------COLLABORATION START-------------------------------------
+
+    public void Clone(String i_Source,String i_Destination,String i_repoName) {
+
+        File sourceFolder = new File(i_Source);
+        File destinationFolder = new File(i_Destination + File.separator + i_repoName);
+        try {
+            copyFolder(sourceFolder, destinationFolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void copyFolder(File sourceFolder, File destinationFolder) throws IOException
+    {
+        //Check if sourceFolder is a directory or file
+        //If sourceFolder is file; then copy the file directly to new location
+        if (sourceFolder.isDirectory())
+        {
+            //Verify if destinationFolder is already present; If not then create it
+            if (!destinationFolder.exists())
+            {
+                destinationFolder.mkdir();
+            }
+
+            //Get all files from source directory
+            String files[] = sourceFolder.list();
+
+            //Iterate over all files and copy them to destinationFolder one by one
+            for (String file : files)
+            {
+                File srcFile = new File(sourceFolder, file);
+                File destFile = new File(destinationFolder, file);
+
+                //Recursive function call
+                copyFolder(srcFile, destFile);
+            }
+        }
+        else
+        {
+            //Copy the file content from one place to another
+            Files.copy(sourceFolder.toPath(), destinationFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+    //-------------------------------------------COLLABORATION END-------------------------------------
 
     //-------------------------------------------GENERAL  START-------------------------------------
     //-------Files&Folders---------Start----------
@@ -535,6 +584,7 @@ public class Logic {
         else
             return EmptyString;
     }
+
     private void deleteFolder(File file) {
         if (file.isDirectory()) {
             for (File f : file.listFiles())//todo file nullpointer
@@ -544,6 +594,7 @@ public class Logic {
         } else
             file.delete();//todo delete return value
     }
+
     public String getContentOfFile(File i_File) {
         String fileContent = EmptyString;
         Path path = Paths.get(i_File.getAbsolutePath());
@@ -557,6 +608,7 @@ public class Logic {
         }
         return fileContent;
     }
+
     private String getContentOfZipFile(String i_Path, String i_ZipName) {
         m_ZipFile.unZipIt(i_Path + File.separator + i_ZipName + ".zip", i_Path);
         File unZippedFile = new File(i_Path + File.separator + i_ZipName + ".txt");
@@ -564,6 +616,7 @@ public class Logic {
         unZippedFile.delete();//todo delete return value
         return contentOfFile;
     }
+
     private String getPathFolder(String i_Folder) {
         String path = EmptyString;
         switch (i_Folder) {
@@ -598,6 +651,7 @@ public class Logic {
             buildingRepository(path, RootFolderSha1, ConstantsEnums.FileType.FOLDER, getPathFolder(".magit") + File.separator + "CommitStatus.txt", true);
         }
     }
+
     private void spreadFolder(String i_Sha1, String folderName) {
         Commit commit = new Commit(getContentOfZipFile(getPathFolder("objects"), i_Sha1));
         String RootFolderSha1 = commit.getM_MainSHA1();
@@ -612,6 +666,7 @@ public class Logic {
         }
         buildingRepository(path, RootFolderSha1, ConstantsEnums.FileType.FOLDER, getPathFolder("merge") + File.separator + folderName + "CommitStatus.txt", false);
     }
+
     private void buildingRepository(String path, String Sha1, ConstantsEnums.FileType i_FileType, String CommitStatusFile, Boolean FromWc) {
         String pathToWrite;
         if (i_FileType == ConstantsEnums.FileType.FOLDER) {
@@ -655,6 +710,7 @@ public class Logic {
         WorkingCopyStatus workingCopyStatus = ShowWorkingCopyStatus(getPathFolder(".magit") + File.separator + "CommitStatus.txt");
         return workingCopyStatus.isNotChanged();
     }
+
     public String getBranchActiveName() {
         String branchActiveName = EmptyString;
 
@@ -668,10 +724,105 @@ public class Logic {
     }
 
     public List<CommitNode> getCommitList() {
-        List<CommitNode> commitNodeList = null;
+        List<BranchDates> branchesList = new ArrayList<>();
+        List<CommitNode> commits = new ArrayList<>();
 
-        return commitNodeList;
+//        List<CommitNode> commitNodeList = null;
+        String branchesNames = EmptyString;
+
+        Path path = Paths.get(getPathFolder("branches") + File.separator + "NAMES.txt");
+        try {
+            branchesNames = new String(Files.readAllBytes(path));
+            String Branches[] = branchesNames.split("\r\n");
+            for (String branchName : Branches) {
+                Path activeBranchPath = Paths.get(getPathFolder("branches") + File.separator + branchName + ".txt");
+
+                if (!Files.exists(activeBranchPath)) {
+                    //do nothing
+                } else {
+                    String brancheCommitSha1 = new String(Files.readAllBytes(activeBranchPath));
+
+                    Commit commit = new Commit(getContentOfZipFile(getPathFolder("objects"), brancheCommitSha1));
+                    String time = commit.getM_CreatedTime();
+                    branchesList.add(new BranchDates(branchName, time));
+                }
+            }
+            //todo: sort by date
+            Collections.sort(branchesList, new Comparator<BranchDates>() {
+                @Override
+                public int compare(BranchDates o1, BranchDates o2) {
+                    try {
+                        return Integer.valueOf(dateFormat.parse(o1.getBranchLastCommitDate()).compareTo(dateFormat.parse(o2.getBranchLastCommitDate())));
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        return 0;
+                    }
+                }
+            });
+            int index =1;
+            for (BranchDates branchDates : branchesList) {
+                Path activeBranchPath = Paths.get(getPathFolder("branches") + File.separator + branchDates.getBranchName() + ".txt");
+
+                if (!Files.exists(activeBranchPath)) {
+                    //do nothing
+                } else {
+
+                    String brancheCommitSha1 = new String(Files.readAllBytes(activeBranchPath));
+                    getAllCommits(brancheCommitSha1,commits,index);
+                }
+                index++;
+            }
+//            System.out.println(commits);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Collections.sort(commits, new Comparator<CommitNode>() {
+            @Override
+            public int compare(CommitNode o1, CommitNode o2) {
+                try {
+                    return Integer.valueOf(dateFormat.parse(o1.getTimestamp()).compareTo(dateFormat.parse(o2.getTimestamp())));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                    return 0;
+                }
+            }
+        });
+        return commits;
     }
 
-    //-------------------------------------------GENERAL  END-------------------------------------
+    private void getAllCommits(String Sha1, List<CommitNode> commits,int index) {
+        Integer prev_branch_number = -1;
+        Commit commit = new Commit(getContentOfZipFile(getPathFolder("objects"), Sha1));
+        if (!listContainSha1(Sha1, commits, index)) {
+            CommitNode commitNode = new CommitNode(commit.getM_CreatedTime(), commit.getM_CreatedBy(), commit.getM_Message(), index, -1, Sha1);
+            commits.add(commitNode);
+            if (!commit.getM_PreviousSHA1().equals("NONE")) {
+                prev_branch_number = listContainPreviousSha1(commit.getM_PreviousSHA1(), commits);
+                commits.get(commits.size() - 1).setPrevBranch(prev_branch_number);
+                if (prev_branch_number == -1) {
+                    getAllCommits(commit.getM_PreviousSHA1(), commits, index);
+                }
+            }
+        }
+    }
+
+    private Integer listContainPreviousSha1(String m_previousSHA1, List<CommitNode> commits) {
+        for(CommitNode commit: commits){
+            if(commit.getSha1().equals(m_previousSHA1)) {
+                return commit.getBranch_number();
+            }
+        }
+        return -1;
+    }
+
+    private boolean listContainSha1(String sha1,List<CommitNode> commits,int index) {
+        for(CommitNode commit: commits){
+            if(commit.getSha1().equals(sha1)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
+/* -------------------------------------------GENERAL  END------------------------------------- */
+

@@ -24,6 +24,7 @@
             <items>
               <MenuItem mnemonicParsing="false" text="Show Open Changes" />
                   <MenuItem mnemonicParsing="false" onAction="#createCommit" text="Create Commit" />
+                  <MenuItem mnemonicParsing="false" onAction="#showCommitList" text="Show Commit Tree" />
             </items>
           </Menu>
           <Menu mnemonicParsing="false" text="Branches">
@@ -36,6 +37,11 @@
                   <MenuItem mnemonicParsing="false" onAction="#mergeBranches" text="Merge" />
             </items>
           </Menu>
+            <Menu mnemonicParsing="false" text="Collaborate">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#Clone" text="Clone" />
+               </items>
+            </Menu>
         </menus>
       </MenuBar>
    </top>
@@ -102,9 +108,9 @@
             </VBox>
          </right>
          <center>
-            <ScrollPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <ScrollPane fx:id="scrollpaneContainer" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <content>
-                  <ListView fx:id="listviewConflict" prefHeight="263.0" prefWidth="498.0" />
+                  <ListView fx:id="listviewConflict" prefHeight="263.0" prefWidth="498.0" visible="false" />
                </content>
                <BorderPane.margin>
                   <Insets right="10.0" top="10.0" />

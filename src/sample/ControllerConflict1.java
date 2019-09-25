@@ -98,8 +98,6 @@ public class ControllerConflict1 implements Initializable {
                 listviewConflict.getItems().remove(index);
                 listviewConflict.refresh();
                 ((Node)(event.getSource())).getScene().getWindow().hide();
-//                Stage stage = (Stage) btn_submit.getScene().getWindow();
-//                stage.close();
             }
         });
 
