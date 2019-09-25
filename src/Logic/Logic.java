@@ -97,10 +97,10 @@ public class Logic {
         String[] RepositoryLocation = xmlReader.getLocation();
         m_ActiveRepository = RepositoryLocation[0] + File.separator + RepositoryLocation[1];
         String m_ActiveRepositoryName = RepositoryLocation[1];
-        if (!m_InputValidation.checkInputActiveRepository(RepositoryLocation[0] + File.separator + RepositoryLocation[1]))
-            createRepository(RepositoryLocation[0],RepositoryLocation[1]);
-        else
-            throw new XmlException("Repository Already Exist.", RepositoryLocation[0] + File.separator + RepositoryLocation[1]);
+          if (!m_InputValidation.checkInputActiveRepository(RepositoryLocation[0] + File.separator + RepositoryLocation[1]))
+              createRepository(RepositoryLocation[0],RepositoryLocation[1]);
+          else
+              throw new XmlException("Repository Already Exist.", RepositoryLocation[0] + File.separator + RepositoryLocation[1]);
         xmlReader.buildFromXML();
         spreadCommitToWc(xmlReader.getActiveBranch());
     }

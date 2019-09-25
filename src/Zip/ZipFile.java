@@ -10,7 +10,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ZipFile {
 
-    public void zipFile(String i_FolderToSave, String i_FileName,String i_FileContent)
+    public void zipFile(String i_FolderToSave, String i_FileName, String i_FileContent)
     {
         StringBuilder sb = new StringBuilder();
         sb.append(i_FileContent);
