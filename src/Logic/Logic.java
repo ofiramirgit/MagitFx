@@ -25,7 +25,6 @@ public class Logic {
     private FilesValidation m_FilesValidation = new FilesValidation();
     private String m_ActiveUser;
     private String m_ActiveRepository;
-    private String m_ActiveRepositoryName;
     private ZipFile m_ZipFile;
     private Map<String, String> m_CurrentCommitStateMap;
     private InputValidation m_InputValidation = new InputValidation();
@@ -53,6 +52,7 @@ public class Logic {
 
     //todo duplicate
     private void createRepository(String selectedFolder, String RepositoryName) {
+        m_ActiveRepository = selectedFolder + File.separator + RepositoryName;
         Path RepositoryPath = Paths.get(selectedFolder + File.separator + RepositoryName);
         Path RootFolderPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + RepositoryName);
         Path ObjectPath = Paths.get(selectedFolder + File.separator + RepositoryName + File.separator + ".magit" + File.separator + "objects");
@@ -98,11 +98,10 @@ public class Logic {
 
         String[] RepositoryLocation = xmlReader.getLocation();
         m_ActiveRepository = RepositoryLocation[0] + File.separator + RepositoryLocation[1];
-        String m_ActiveRepositoryName = RepositoryLocation[1];
-          if (!m_InputValidation.checkInputActiveRepository(RepositoryLocation[0] + File.separator + RepositoryLocation[1]))
+          if (!m_InputValidation.checkInputActiveRepository(m_ActiveRepository))
               createRepository(RepositoryLocation[0],RepositoryLocation[1]);
           else
-              throw new XmlException("Repository Already Exist.", RepositoryLocation[0] + File.separator + RepositoryLocation[1]);
+              throw new XmlException("Repository Already Exist.", m_ActiveRepository);
         xmlReader.buildFromXML();
         spreadCommitToWc(xmlReader.getActiveBranch());
     }
@@ -595,8 +594,7 @@ public class Logic {
         }
     }
 
-    private static void copyFolder(File sourceFolder, File destinationFolder) throws IOException
-    {
+    private static void copyFolder(File sourceFolder, File destinationFolder) throws IOException {
         //Check if sourceFolder is a directory or file
         //If sourceFolder is file; then copy the file directly to new location
         if (sourceFolder.isDirectory())
@@ -764,6 +762,14 @@ public class Logic {
         return workingCopyStatus.isNotChanged();
     }
 
+    public Boolean isBranchExist(String i_BranchName){
+
+        Path BranchPath = Paths.get(getPathFolder("branches") + File.separator + i_BranchName + ".txt");
+        if (Files.exists(BranchPath))
+            return true;
+        return false;
+    }
+
     public String getBranchActiveName() {
         String branchActiveName = EmptyString;
 
@@ -875,6 +881,21 @@ public class Logic {
             }
         }
         return false;
+    }
+
+    public boolean isSha1Exist(String i_Sha1) {
+        Path Sha1Path = Paths.get(getPathFolder("objects") + File.separator + i_Sha1 + ".zip");
+        if (Files.exists(Sha1Path))
+            return true;
+        return false;
+    }
+
+    public void zeroingBranch(String i_Sha1) {
+        String ActiveBranch = getBranchActiveName();
+        updateBranchActiveCommit(i_Sha1);
+        File rootFolder = new File(m_ActiveRepository + File.separator + getRootFolderName());
+        deleteFolder(rootFolder);
+        spreadCommitToWc(ActiveBranch);
     }
 }
 /* -------------------------------------------GENERAL  END------------------------------------- */

@@ -12,7 +12,7 @@
    <top>
       <MenuBar BorderPane.alignment="CENTER">
         <menus>
-          <Menu mnemonicParsing="false" text="Repository">
+          <Menu fx:id="menu_repository" mnemonicParsing="false" text="Repository">
             <items>
                   <MenuItem mnemonicParsing="false" onAction="#setUserName" text="Set User Name" />
               <MenuItem mnemonicParsing="false" onAction="#readXML" text="Load from XML" />
@@ -20,24 +20,24 @@
                   <MenuItem mnemonicParsing="false" onAction="#switchRepository" text="Switch Repository" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="File &amp; Commits">
+          <Menu fx:id="menu_file_commits" disable="true" mnemonicParsing="false" text="File &amp; Commits">
             <items>
               <MenuItem mnemonicParsing="false" text="Show Open Changes" />
                   <MenuItem mnemonicParsing="false" onAction="#createCommit" text="Create Commit" />
                   <MenuItem mnemonicParsing="false" onAction="#showCommitList" text="Show Commit Tree" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Branches">
+          <Menu fx:id="menu_branches" disable="true" mnemonicParsing="false" text="Branches">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#showBranchList" text="Show All" />
                   <MenuItem mnemonicParsing="false" onAction="#createNewBranch" text="Create New" />
                   <MenuItem mnemonicParsing="false" onAction="#deleteExistBranch" text="Delete Exist Branch" />
                   <MenuItem mnemonicParsing="false" onAction="#CheckOutHeadBranch" text="Switch Head Branch" />
-                  <MenuItem mnemonicParsing="false" text="Reset Branch" />
+                  <MenuItem mnemonicParsing="false" onAction="#ResetBranch" text="Reset Branch" />
                   <MenuItem mnemonicParsing="false" onAction="#mergeBranches" text="Merge" />
             </items>
           </Menu>
-            <Menu mnemonicParsing="false" text="Collaborate">
+            <Menu fx:id="menu_collaborate" disable="true" mnemonicParsing="false" text="Collaborate">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#Clone" text="Clone" />
                </items>
@@ -94,19 +94,6 @@
                </BorderPane.margin>
             </GridPane>
          </top>
-         <right>
-            <VBox prefHeight="200.0" prefWidth="100.0" BorderPane.alignment="CENTER">
-               <children>
-                  <Button mnemonicParsing="false" text="Solve Conflict">
-                     <font>
-                        <Font size="12.0" />
-                     </font></Button>
-               </children>
-               <BorderPane.margin>
-                  <Insets top="20.0" />
-               </BorderPane.margin>
-            </VBox>
-         </right>
          <center>
             <ScrollPane fx:id="scrollpaneContainer" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
                <content>

@@ -43,27 +43,16 @@ public class Controller {
     private FilesValidation m_FilesValidation = new FilesValidation();
 
     @FXML
-    public Button btn_loadXml;
-    @FXML
-    public Button btn_switchRepository;
-    @FXML
-    public Button btn_initRepository;
-    @FXML
-    public Button btn_mergeBranches;
-    @FXML
     public TextField txtField_repositoryPath;
     @FXML
     public TextField txtField_userName;
     @FXML
-    public Button btn_setUserName;
-    @FXML
-    public Tab tab_fileCommit;
-    @FXML
-    public Tab tab_branches;
-    @FXML
     public TextArea textArea;
     @FXML
     public ListView listviewConflict;
+    @FXML
+    public Menu menu_repository,menu_file_commits,menu_branches,menu_collaborate;
+
 
     //-------------Repository - Start--------------------------
     //create repository
@@ -113,6 +102,7 @@ public class Controller {
             if (m_LogicManager.setM_ActiveRepository(selectedFolder.getAbsolutePath())) {
                 txtField_repositoryPath.setText(selectedFolder.getAbsolutePath());
                 txtField_userName.setText("Administrator");
+                unDisableRepositorySection();
             } else {
                 Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Repository Not Exist", "the folder you selected isn't repository");
                 alert.showAndWait();
@@ -244,16 +234,33 @@ public class Controller {
         }
     }
 
+    //Reset Branch
+    public void ResetBranch(javafx.event.ActionEvent actionEvent){
+        TextInputDialog dialog = TextDialogCreator("Reset Branch", "Insert Sha1 To Reset Branch", "Please enter Sha1: ");
+        Optional<String> result = dialog.showAndWait();
+        if (!result.isPresent())
+            return;
+        if(!m_LogicManager.isSha1Exist(result.get()))
+            return;
+        m_LogicManager.zeroingBranch(result.get());
+    }
+
     //Merge
     public void mergeBranches(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = TextDialogCreator("Input Branch Name", "Insert Branch Name", "Please enter repository name: ");
         Optional<String> result = dialog.showAndWait();
         //todo validation input
         //todo no open changes
+        if (!result.isPresent())
+            return;
+        if(!m_LogicManager.isBranchExist(result.get())){
+            Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Branch Not Exist", "the branch name you entered is not exist.");
+            alert.showAndWait();
+            return;
+        }
+
         OpenAndConflict openAndConflict = m_LogicManager.MergeBranches(m_LogicManager.getBranchActiveName(), result.get());
-        String s = "";
         listviewConflict.setVisible(true);
-//        ListView<Conflict> listViewConflict = new ListView<>();
         for (Conflict c : openAndConflict.getConflictList()) {
             listviewConflict.getItems().add(c);
         }
@@ -286,7 +293,6 @@ public class Controller {
                         listviewConflict.setVisible(false);
                         System.out.println("NO MORE ITEMS");
                         createCommit(actionEvent);
-
                     }
 
                 } catch (IOException e) {
@@ -296,6 +302,8 @@ public class Controller {
             }
         });
     }
+
+
     //-------------Branches - End--------------------------
 
     //-------------Collaboration - Start--------------------------
@@ -336,10 +344,9 @@ public class Controller {
 
     public void unDisableRepositorySection() {
         txtField_userName.setText("Administrator");
-        tab_fileCommit.setDisable(false);
-        tab_branches.setDisable(false);
-        btn_switchRepository.setDisable(false);
-        btn_setUserName.setDisable(false);
+        menu_branches.setDisable(false);
+        menu_file_commits.setDisable(false);
+        menu_collaborate.setDisable(false);
     }
 
     private TextInputDialog TextDialogCreator(String i_Title, String i_Header, String i_Content) {
