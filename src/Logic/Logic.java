@@ -8,7 +8,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 //import sun.security.ec.ECDSASignature;
 
 import javax.xml.bind.JAXBException;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.text.ParseException;
@@ -552,24 +554,9 @@ public class Logic {
 
         try {
             Files.createDirectory(RBfolder);
-            Files.createDirectory(RTBfol);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        //create RTB
-        Path headPath = Paths.get(branchDirectory.getAbsolutePath() + File.separator + "HEAD.txt");
-        try{
-        headBranchName = new String(Files.readAllBytes(headPath));
-        File newRTB = new File(RTBfol.toString() + File.separator + headBranchName + ".txt");
-            if (!newRTB.exists())
-            {
-                newRTB.createNewFile();
-                //todo write to rtb <repo..>/<branchname>
-            }
-        } catch (IOException e) {
-                    e.printStackTrace();
-                }
 
        //create all RB's
         for (File branch : branchDirectory.listFiles()) {
@@ -585,6 +572,26 @@ public class Logic {
                     e.printStackTrace();
                 }
             }
+        }
+
+        //create RTB
+        try {
+            Files.createDirectory(RTBfol);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Path headPath = Paths.get(branchDirectory.getAbsolutePath() + File.separator + "HEAD.txt");
+        try{
+            headBranchName = new String(Files.readAllBytes(headPath));
+            File activeBranch = new File(branchDirectory.toPath() + File.separator + headBranchName + ".txt");
+            File newRTB = new File(RTBfol.toString() + File.separator + headBranchName + ".txt");
+            if (!newRTB.exists())
+            {
+                Files.copy(activeBranch.toPath(), newRTB.toPath() , StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
