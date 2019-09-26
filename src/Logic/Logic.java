@@ -540,6 +540,52 @@ public class Logic {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        createRemoteBranches(destinationFolder, sourceFolder);
+        //todo spread the repository
+    }
+
+    private void createRemoteBranches(File destinationFolder, File sourceFolder) {
+        File branchDirectory = new File(destinationFolder + File.separator + ".magit" + File.separator + "branches");
+        Path RBfolder = Paths.get(branchDirectory.getAbsolutePath() + File.separator + sourceFolder.getName());
+        Path RTBfol = Paths.get(branchDirectory.getAbsolutePath() + File.separator + "RTB");
+        String headBranchName;
+
+        try {
+            Files.createDirectory(RBfolder);
+            Files.createDirectory(RTBfol);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //create RTB
+        Path headPath = Paths.get(branchDirectory.getAbsolutePath() + File.separator + "HEAD.txt");
+        try{
+        headBranchName = new String(Files.readAllBytes(headPath));
+        File newRTB = new File(RTBfol.toString() + File.separator + headBranchName + ".txt");
+            if (!newRTB.exists())
+            {
+                newRTB.createNewFile();
+                //todo write to rtb <repo..>/<branchname>
+            }
+        } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+       //create all RB's
+        for (File branch : branchDirectory.listFiles()) {
+            if(!branch.getName().equals("NAMES.txt") && !branch.getName().equals("HEAD.txt") && !branch.getName().equals(sourceFolder.getName())){
+                try {
+                    File newBranch = new File(RBfolder.toString() + File.separator + branch.getName());
+                    if (!newBranch.exists())
+                    {
+                        newBranch.createNewFile();
+                    }
+                    Files.copy(branch.toPath(), newBranch.toPath() , StandardCopyOption.REPLACE_EXISTING);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private static void copyFolder(File sourceFolder, File destinationFolder) throws IOException

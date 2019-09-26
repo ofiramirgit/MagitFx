@@ -54,8 +54,6 @@ public class XmlReader {
         magitRepository = unmarshalledObject.getValue();
     }
 
-
-
     public String[] getLocation() {
         String[] RepositoryLocation = {magitRepository.getLocation(), magitRepository.getName()};
         m_Location = RepositoryLocation[0] + File.separator + RepositoryLocation[1];
@@ -82,7 +80,6 @@ public class XmlReader {
             e.printStackTrace();
         }
     }
-
 
     public String getActiveBranch(){
         return magitRepository.getMagitBranches().getHead();
