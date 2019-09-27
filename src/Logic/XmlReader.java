@@ -13,10 +13,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +33,7 @@ public class XmlReader {
     }
 
     public void ReadXml(String i_Location) throws JAXBException,XmlException {
+
         InputStream inputStream =null;
         try {
             Path XmlFilePath = Paths.get(i_Location);
@@ -63,17 +61,20 @@ public class XmlReader {
     public void buildFromXML() throws XmlException {
         checkIfActiveBranchExist(getActiveBranch());
         checkIfMagitRemoteReferenceExist(magitRepository.getMagitRemoteReference());
-        //    checkIfRemoteTrackingExist(magitRepository);
+        //todo    checkIfRemoteTrackingExist(magitRepository);
         Path ActiveBranchFilePath = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + "HEAD.txt");
         Path BranchesNamesFilePath = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + "NAMES.txt");
         try {
             Files.write(BranchesNamesFilePath, EmptyString.getBytes());
             Files.write(ActiveBranchFilePath, getActiveBranch().getBytes());
+            Path remoteBranchFolder = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" +File.separator + magitRepository.getMagitRemoteReference().getName());
+            Files.createDirectory(remoteBranchFolder);
             for (MagitSingleBranchType branch : magitRepository.getMagitBranches().getMagitSingleBranch()) {
+                Path BranchPath = Paths.get(m_Location + File.separator + ".magit" + File.separator + "branches" + File.separator + branch.getName() + ".txt");
                 Files.write(BranchesNamesFilePath, (branch.getName() + System.lineSeparator()).getBytes(), StandardOpenOption.APPEND);
                 checkIfCommitExist(branch.getPointedCommit().getId());
                 String CommitSha1 = buildCommit(magitRepository.getMagitCommits().getMagitSingleCommit().get(Integer.parseInt(branch.getPointedCommit().getId())-1));
-                updateBranchCommit(CommitSha1, branch.getName());
+                updateBranchCommit(CommitSha1, BranchPath, branch, remoteBranchFolder);
             }
         }
         catch (IOException e) {
@@ -84,12 +85,20 @@ public class XmlReader {
     public String getActiveBranch(){
         return magitRepository.getMagitBranches().getHead();
     }
-    private void updateBranchCommit(String i_CommitSha1,String i_BranchName) {
-        Path BranchPath = Paths.get(m_Location + File.separator + ".magit" + File.separator + "branches" + File.separator + i_BranchName + ".txt");
+    private void updateBranchCommit(String i_CommitSha1,Path i_BranchPath, MagitSingleBranchType i_BranchType, Path remotePathName) {
         try{
-            if(!Files.exists(BranchPath))
-                Files.createFile(BranchPath);
-            Files.write(BranchPath,i_CommitSha1.getBytes());
+            if(!Files.exists(i_BranchPath))
+                Files.createFile(i_BranchPath);
+            Files.write(i_BranchPath,i_CommitSha1.getBytes());
+            if(i_BranchType.getIsRemote() != null){
+                Files.copy(i_BranchPath, remotePathName , StandardCopyOption.REPLACE_EXISTING);
+            }
+            if(i_BranchType.getTracking().equals("true")){
+                Path RTBfol = Paths.get(m_Location + File.separator + ".magit" +File.separator + "branches" + File.separator + "RTB");
+                if(!Files.exists(RTBfol))
+                    Files.createDirectory(RTBfol);
+                Files.copy(i_BranchPath, Paths.get(RTBfol +File.separator+ i_BranchType.getName()+".txt") , StandardCopyOption.REPLACE_EXISTING);
+            }
         }
         catch (Exception e)
         {

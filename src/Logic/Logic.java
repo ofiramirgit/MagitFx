@@ -390,7 +390,7 @@ public class Logic {
     }
     //-------DeleteExistBranch---------End--------
 
-    //-------mergeBranches---------Start--------
+    //-------MergeBranches---------Start--------
     public OpenAndConflict MergeBranches(String oursBranch, String theirsBranch) {
         String sharedFatherSha1 = findSharedFather(oursBranch, theirsBranch);
         String Sha1Theirs = getContentOfFile(new File(getPathFolder("branches"), theirsBranch + ".txt"));
@@ -542,7 +542,7 @@ public class Logic {
             e.printStackTrace();
         }
         createRemoteBranches(destinationFolder, sourceFolder);
-        //todo spread the repository
+        m_ActiveRepository = destinationFolder.getAbsolutePath();
     }
 
     private void createRemoteBranches(File destinationFolder, File sourceFolder) {
@@ -576,12 +576,7 @@ public class Logic {
         //create RTB
         try {
             Files.createDirectory(RTBfol);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Path headPath = Paths.get(branchDirectory.getAbsolutePath() + File.separator + "HEAD.txt");
-        try{
+            Path headPath = Paths.get(branchDirectory.getAbsolutePath() + File.separator + "HEAD.txt");
             headBranchName = new String(Files.readAllBytes(headPath));
             File activeBranch = new File(branchDirectory.toPath() + File.separator + headBranchName + ".txt");
             File newRTB = new File(RTBfol.toString() + File.separator + headBranchName + ".txt");

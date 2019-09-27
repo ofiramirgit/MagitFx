@@ -77,20 +77,24 @@ public class Controller {
 
     //Load Repository XML
     public void readXML(javafx.event.ActionEvent actionEvent) {
-
         final FileChooser dc = new FileChooser();
         File selectedXML = dc.showOpenDialog(null);
+        Runnable runnable = () -> {
 
-        try {
-            if (selectedXML != null) {
-                m_LogicManager.readXML(selectedXML.getAbsolutePath());
-                txtField_repositoryPath.setText(selectedXML.getAbsolutePath());
-                            unDisableRepositorySection();
+            try {
+                if (selectedXML != null) {
+                    m_LogicManager.readXML(selectedXML.getAbsolutePath());
+                    txtField_repositoryPath.setText(selectedXML.getAbsolutePath());
+                    unDisableRepositorySection();
+                }
+            } catch (XmlException e) {
+                Alert alert = alertCreator(Alert.AlertType.WARNING,"XML loading aborted",e.getMessage(),"");
+                alert.showAndWait();
             }
-        } catch (XmlException e) {
-            Alert alert = alertCreator(Alert.AlertType.WARNING,"XML loading aborted",e.getMessage(),"");
-            alert.showAndWait();
-        }
+        };
+
+        Thread thread = new Thread(runnable);
+        thread.start();
 
     }
 
@@ -317,15 +321,20 @@ public class Controller {
 
 
         if (selectedRepo != null) {
-            if(m_FilesValidation.isRepository(selectedRepo.getAbsolutePath())){
+            if(m_FilesValidation.isRepository(selectedRepo.getAbsolutePath())) {
                 dc.setTitle("Select Destination Folder to clone into");
                 selectedDestination = dc.showDialog(null);
-                if(selectedDestination!=null){
+                if (selectedDestination != null) {
                     td.setTitle("");
                     td.setHeaderText("Enter Repository Name");
                     Optional<String> result = td.showAndWait();
-                    m_LogicManager.Clone(selectedRepo.getAbsolutePath(),selectedDestination.getAbsolutePath(),result.get());
+                    m_LogicManager.Clone(selectedRepo.getAbsolutePath(), selectedDestination.getAbsolutePath(), result.get());
+                    txtField_repositoryPath.setText(m_LogicManager.getM_ActiveRepository());
                 }
+                else {
+                    Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Repository Not Exist", "the folder you selected isn't repository");
+                    alert.showAndWait();
+                        }
             }
             else{
                 Alert alert = alertCreator(Alert.AlertType.WARNING,"Selected file is not a Repository.","Please select a repository","");
@@ -338,6 +347,9 @@ public class Controller {
         }
     }
 
+    public void Fetch(javafx.event.ActionEvent actionEvent) throws Exception{
+
+    }
     //-------------Collaboration - End--------------------------
 
     //-------------General - Start--------------------------
