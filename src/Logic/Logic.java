@@ -242,7 +242,7 @@ public class Logic {
     //-------Commit---------End--------
 
     //-------Working Copy---------Start--------
-    private WorkingCopyStatus ShowWorkingCopyStatus(String pathCommitStatus) {
+    public WorkingCopyStatus ShowWorkingCopyStatus(String pathCommitStatus) {
 
         WorkingCopyStatus wcStatus = new WorkingCopyStatus();
         String rootFolderName = getRootFolderName();
@@ -707,7 +707,7 @@ public class Logic {
         return contentOfFile;
     }
 
-    private String getPathFolder(String i_Folder) {
+    public String getPathFolder(String i_Folder) {
         String path = EmptyString;
         switch (i_Folder) {
             case "objects":

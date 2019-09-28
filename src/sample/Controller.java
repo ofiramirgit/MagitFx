@@ -1,6 +1,7 @@
 package sample;
 import Logic.Logic;
 import Logic.Objects.BranchData;
+import Logic.Objects.WorkingCopyStatus;
 import com.fxgraph.edges.Edge;
 import com.fxgraph.graph.Graph;
 import com.fxgraph.graph.ICell;
@@ -136,6 +137,37 @@ public class Controller {
     //-------------Repository - End--------------------------
 
     //-------------Files & Commits - Start--------------------------
+    public void showWcStatus(javafx.event.ActionEvent actionEvent) {
+        WorkingCopyStatus wcStatus = m_LogicManager.ShowWorkingCopyStatus(m_LogicManager.getPathFolder(".magit") + File.separator + "CommitStatus.txt");
+        String stringToShow=EmptyString;
+        if(wcStatus.isNotChanged()){
+            stringToShow += "There is no changes." + System.lineSeparator();
+
+        }
+        else {
+            if (!wcStatus.getM_NewFilesList().isEmpty()) {
+                stringToShow += "New Files:" +System.lineSeparator();
+                for (String fileFullName : wcStatus.getM_NewFilesList())
+                    stringToShow += ("    - " + fileFullName)+System.lineSeparator();
+                stringToShow += System.lineSeparator();
+            }
+            if (!wcStatus.getM_ChangedFilesList().isEmpty()) {
+                stringToShow += "Modified Files:" + System.lineSeparator();
+                for (String fileFullName : wcStatus.getM_ChangedFilesList())
+                    stringToShow += ("    - " + fileFullName) + System.lineSeparator();
+                stringToShow += System.lineSeparator();
+            }
+            if (!wcStatus.getM_DeletedFilesList().isEmpty()) {
+                stringToShow += "Deleted Files:" + System.lineSeparator();
+                for (String fileFullName : wcStatus.getM_DeletedFilesList())
+                    stringToShow += ("    - " + fileFullName) + System.lineSeparator();
+                stringToShow += System.lineSeparator();
+            }
+        }
+        textArea.setText(stringToShow);
+    }
+
+
     public void createCommit(javafx.event.ActionEvent actionEvent) {
         TextInputDialog dialog = TextDialogCreator("Commit Message", "Insert Commit Message", "Please enter Commit Message: ");
         Optional<String> result = dialog.showAndWait();
@@ -157,8 +189,6 @@ public class Controller {
 
         ScrollPane scrollPane = (ScrollPane) scene.lookup("#scrollpaneContainer");
         PannableCanvas canvas = tree.getCanvas();
-        //canvas.setPrefWidth(100);
-        //canvas.setPrefHeight(100);
         scrollPane.setContent(canvas);
 
         Button button = (Button) scene.lookup("#pannableButton");
