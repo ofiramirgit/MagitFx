@@ -662,7 +662,7 @@ public class Logic {
        try {
             headBranchNameRR = new String(Files.readAllBytes(headPathRR));
             getFilesFromCollaborator(headBranchNameRR, objectsLR);
-            //update branch
+            //todo update branch (RTB,RB)
        } catch (IOException e) {
            e.printStackTrace();
        }
@@ -673,24 +673,24 @@ public class Logic {
           try {
               String commitSha1 = new String(Files.readAllBytes(headBranchPath));
               Path objectsRR = Paths.get(m_CollaborateWithPath + File.separator + ".magit" + File.separator + "objects");
-              recursiveGetFiles(objectsRR, objectsLR, commitSha1, FileType.COMMIT);
+              recursiveMoveFiles(objectsRR, objectsLR, commitSha1, FileType.COMMIT);
           } catch (IOException e) {
               e.printStackTrace();
           }
     }
 
-    private void recursiveGetFiles(Path i_From, Path i_To, String i_Sha1, FileType i_FileType) {
+    private void recursiveMoveFiles(Path i_From, Path i_To, String i_Sha1, FileType i_FileType) {
         String fileDetails = getContentOfZipFile(i_From + File.separator, i_Sha1);
         pullFile(i_From, i_To, i_Sha1);
 
         if(i_FileType.equals(FileType.COMMIT)){
             String[] commitDetailsArr = fileDetails.split(", ");
             String folderName =commitDetailsArr[0];
-            recursiveGetFiles(i_From, i_To, folderName, FileType.FOLDER);
+            recursiveMoveFiles(i_From, i_To, folderName, FileType.FOLDER);
 
             if(!commitDetailsArr[1].equals("NONE")){
                 String prevCommit =commitDetailsArr[1];
-                recursiveGetFiles(i_From, i_To, prevCommit, FileType.COMMIT);
+                recursiveMoveFiles(i_From, i_To, prevCommit, FileType.COMMIT);
             }
 
         }
@@ -699,10 +699,10 @@ public class Logic {
             for(String fileString : folderDetailsArr){
                 String[] fileDetailsArr = fileString.split(", ");
                 if(fileDetailsArr[2].equals("FOLDER")){
-                    recursiveGetFiles(i_From, i_To, fileDetailsArr[1], FileType.FOLDER);
+                    recursiveMoveFiles(i_From, i_To, fileDetailsArr[1], FileType.FOLDER);
                 }
                 else if(fileDetailsArr[2].equals("FILE")){
-                    recursiveGetFiles(i_From, i_To, fileDetailsArr[1], FileType.FILE);
+                    recursiveMoveFiles(i_From, i_To, fileDetailsArr[1], FileType.FILE);
                 }
             }
         }
@@ -722,6 +722,15 @@ public class Logic {
 
     //Push
     public void Push() {
+        String headBranchName =  getBranchActiveName();
+        Path headBranchPath = Paths.get(getPathFolder("branches") + File.separator + headBranchName + ".txt");
+        try {
+            String commitSha1 = new String(Files.readAllBytes(headBranchPath));
+            Path objectsRR = Paths.get(m_CollaborateWithPath + File.separator + ".magit" + File.separator + "objects");
+            recursiveMoveFiles(Paths.get(getPathFolder("objects")), objectsRR, commitSha1, FileType.COMMIT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     //-------------------------------------------COLLABORATION END-------------------------------------
