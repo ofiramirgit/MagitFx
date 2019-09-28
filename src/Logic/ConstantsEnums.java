@@ -7,7 +7,8 @@ public class ConstantsEnums {
     public enum FileType {
         NONE,
         FILE,
-        FOLDER
+        FOLDER,
+        COMMIT
     }
 
     public enum FileState{

@@ -656,8 +656,69 @@ public class Logic {
 
     //Pull
     public void Pull(){
-
+       String headBranchNameRR;
+       Path headPathRR = Paths.get(m_CollaborateWithPath + File.separator + ".magit" + File.separator +"branches" + File.separator + "HEAD.txt");
+       Path objectsLR = Paths.get(m_ActiveRepository + File.separator + ".magit" + File.separator + "objects");
+       try {
+            headBranchNameRR = new String(Files.readAllBytes(headPathRR));
+            getFilesFromCollaborator(headBranchNameRR, objectsLR);
+            //update branch
+       } catch (IOException e) {
+           e.printStackTrace();
+       }
     }
+
+    private void getFilesFromCollaborator(String headBranchNameRR, Path objectsLR) {
+          Path headBranchPath = Paths.get(m_CollaborateWithPath + File.separator + ".magit" + File.separator +"branches" + File.separator + headBranchNameRR + ".txt");
+          try {
+              String commitSha1 = new String(Files.readAllBytes(headBranchPath));
+              Path objectsRR = Paths.get(m_CollaborateWithPath + File.separator + ".magit" + File.separator + "objects");
+              recursiveGetFiles(objectsRR, objectsLR, commitSha1, FileType.COMMIT);
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+    }
+
+    private void recursiveGetFiles(Path i_From, Path i_To, String i_Sha1, FileType i_FileType) {
+        String fileDetails = getContentOfZipFile(i_From + File.separator, i_Sha1);
+        pullFile(i_From, i_To, i_Sha1);
+
+        if(i_FileType.equals(FileType.COMMIT)){
+            String[] commitDetailsArr = fileDetails.split(", ");
+            String folderName =commitDetailsArr[0];
+            recursiveGetFiles(i_From, i_To, folderName, FileType.FOLDER);
+
+            if(!commitDetailsArr[1].equals("NONE")){
+                String prevCommit =commitDetailsArr[1];
+                recursiveGetFiles(i_From, i_To, prevCommit, FileType.COMMIT);
+            }
+
+        }
+        else if(i_FileType.equals(FileType.FOLDER)) {
+            String[] folderDetailsArr = fileDetails.split(" ~ ");
+            for(String fileString : folderDetailsArr){
+                String[] fileDetailsArr = fileString.split(", ");
+                if(fileDetailsArr[2].equals("FOLDER")){
+                    recursiveGetFiles(i_From, i_To, fileDetailsArr[1], FileType.FOLDER);
+                }
+                else if(fileDetailsArr[2].equals("FILE")){
+                    recursiveGetFiles(i_From, i_To, fileDetailsArr[1], FileType.FILE);
+                }
+            }
+        }
+    }
+
+    private void pullFile(Path i_From, Path i_To, String i_sha1) {
+        File sourceFile = new File(i_From + File.separator + i_sha1+".zip");
+        File destinationFile = new File(i_To + File.separator + i_sha1+".zip");
+        try {
+            Files.copy(sourceFile.toPath(), destinationFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     //Push
     public void Push() {
