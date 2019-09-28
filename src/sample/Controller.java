@@ -52,7 +52,12 @@ public class Controller {
     public ListView listviewConflict;
     @FXML
     public Menu menu_repository,menu_file_commits,menu_branches,menu_collaborate;
-
+    @FXML
+    public MenuItem FetchMenuItem;
+    @FXML
+    public MenuItem PushMenuItem;
+    @FXML
+    public MenuItem PullMenuItem;
 
     //-------------Repository - Start--------------------------
     //create repository
@@ -330,6 +335,9 @@ public class Controller {
                     Optional<String> result = td.showAndWait();
                     m_LogicManager.Clone(selectedRepo.getAbsolutePath(), selectedDestination.getAbsolutePath(), result.get());
                     txtField_repositoryPath.setText(m_LogicManager.getM_ActiveRepository());
+                    FetchMenuItem.setDisable(false);
+                    PullMenuItem.setDisable(false);
+                    PushMenuItem.setDisable(false);
                 }
                 else {
                     Alert alert = alertCreator(Alert.AlertType.ERROR, "Error", "Repository Not Exist", "the folder you selected isn't repository");
@@ -348,7 +356,15 @@ public class Controller {
     }
 
     public void Fetch(javafx.event.ActionEvent actionEvent) throws Exception{
+        m_LogicManager.Fetch();
+    }
 
+    public void Pull(javafx.event.ActionEvent actionEvent) throws Exception{
+        m_LogicManager.Pull();
+    }
+
+    public void Push(javafx.event.ActionEvent actionEvent) throws Exception{
+        m_LogicManager.Push();
     }
     //-------------Collaboration - End--------------------------
 

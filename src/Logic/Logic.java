@@ -28,6 +28,8 @@ public class Logic {
     private ZipFile m_ZipFile;
     private Map<String, String> m_CurrentCommitStateMap;
     private InputValidation m_InputValidation = new InputValidation();
+    private String m_CollaborateWithPath = EmptyString;
+    private String m_CollaborateName;
 
     public Logic() {
         m_ActiveUser = "Administrator";
@@ -531,8 +533,8 @@ public class Logic {
 
     //-------------------------------------------BRANCH  END-------------------------------------
     //-------------------------------------------COLLABORATION START-------------------------------------
-
-    public void Clone(String i_Source,String i_Destination,String i_repoName) {
+    //Clone
+    public void Clone(String i_Source, String i_Destination, String i_repoName) {
 
         File sourceFolder = new File(i_Source);
         File destinationFolder = new File(i_Destination + File.separator + i_repoName);
@@ -543,6 +545,8 @@ public class Logic {
         }
         createRemoteBranches(destinationFolder, sourceFolder);
         m_ActiveRepository = destinationFolder.getAbsolutePath();
+        m_CollaborateWithPath = i_Source;
+        m_CollaborateName = sourceFolder.getName();
     }
 
     private void createRemoteBranches(File destinationFolder, File sourceFolder) {
@@ -619,6 +623,46 @@ public class Logic {
             Files.copy(sourceFolder.toPath(), destinationFolder.toPath(), StandardCopyOption.REPLACE_EXISTING);
         }
     }
+
+    //Fetch
+    public void Fetch() {
+        fetchCommits();
+        fetchBranches();
+
+    }
+
+    private void fetchCommits() {
+        doFetch("objects","objects");
+    }
+
+    private void fetchBranches() {
+        doFetch("branches", "branches" + File.separator + m_CollaborateName);
+        doFetch("branches", "branches");
+    }
+
+    private void doFetch(String i_From, String i_To){
+        File sourceFile = new File(m_CollaborateWithPath + File.separator + ".magit" + File.separator + i_From);
+        File destinationFile = new File(m_ActiveRepository + File.separator + ".magit" + File.separator + i_To);
+
+        for (File file : sourceFile.listFiles()) {
+            try {
+                Path destination = Paths.get(destinationFile.getAbsolutePath() + File.separator +file.getName());
+                Files.copy(file.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //Pull
+    public void Pull(){
+
+    }
+
+    //Push
+    public void Push() {
+    }
+
     //-------------------------------------------COLLABORATION END-------------------------------------
 
     //-------------------------------------------GENERAL  START-------------------------------------
@@ -892,6 +936,16 @@ public class Logic {
         deleteFolder(rootFolder);
         spreadCommitToWc(ActiveBranch);
     }
+
+    public String getM_CollaborateWithPath() {
+        return m_CollaborateWithPath;
+    }
+
+    public void setM_CollaborateWithPath(String m_CollaborateWithPath) {
+        this.m_CollaborateWithPath = m_CollaborateWithPath;
+    }
+
+
 }
 /* -------------------------------------------GENERAL  END------------------------------------- */
 

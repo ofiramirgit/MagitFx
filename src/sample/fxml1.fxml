@@ -47,7 +47,9 @@
             <Menu fx:id="menu_collaborate" disable="true" mnemonicParsing="false" text="Collaborate">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#Clone" text="Clone" />
-                  <MenuItem mnemonicParsing="false" onAction="#Fetch" text="Fetch" />
+                  <MenuItem fx:id="FetchMenuItem" disable="true" mnemonicParsing="false" onAction="#Fetch" text="Fetch" />
+                  <MenuItem fx:id="PullMenuItem" disable="true" mnemonicParsing="false" onAction="#Pull" text="Pull" />
+                  <MenuItem fx:id="PushMenuItem" disable="true" mnemonicParsing="false" onAction="#Push" text="Push" />
                </items>
             </Menu>
         </menus>
